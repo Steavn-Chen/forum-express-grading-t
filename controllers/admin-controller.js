@@ -1,4 +1,4 @@
-const { Restaurant } = require('../models')
+const { Restaurant, User } = require('../models')
 const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const adminController = {
   getRestaurants: (req, res, next) => {
@@ -17,14 +17,17 @@ const adminController = {
     const { name, tel, address, openingHours, description } = req.body
     if (!name) throw new Error('Restaurant name is required!')
     const { file } = req
-    imgurFileHandler(file).then(filePath => Restaurant.create({
-      name,
-      tel,
-      address,
-      openingHours,
-      description,
-      image: filePath || null
-    }))
+    imgurFileHandler(file)
+      .then(filePath =>
+        Restaurant.create({
+          name,
+          tel,
+          address,
+          openingHours,
+          description,
+          image: filePath || null
+        })
+      )
       .then(() => {
         req.flash('success_messages', 'restaurant was successfully created')
         res.redirect('/admin/restaurants')
@@ -55,10 +58,7 @@ const adminController = {
     const { name, tel, address, openingHours, description } = req.body
     if (!name) throw new Error('Restaurant name is required!')
     const { file } = req
-    Promise.all([
-      Restaurant.findByPk(req.params.id),
-      imgurFileHandler(file)
-    ])
+    Promise.all([Restaurant.findByPk(req.params.id), imgurFileHandler(file)])
       .then(([restaurant, filePath]) => {
         if (!restaurant) throw new Error("Restaurant didn't exist!")
         return restaurant.update({
@@ -84,6 +84,27 @@ const adminController = {
       })
       .then(() => {
         res.redirect('/admin/restaurants')
+      })
+      .catch(err => next(err))
+  },
+  getUsers: (req, res, next) => {
+    return User.findAll({
+      raw: true
+    }).then(users => {
+      res.render('admin/users', { users: users })
+    })
+  },
+  patchUser: (req, res, next) => {
+    return User.findByPk(req.params.id)
+      .then(user => {
+        if (user.name === 'root' || user.name === 'admin') {
+          req.flash('error_messages', '禁止變更 root 權限')
+          return res.redirect('back')
+        }
+        return user.update({ isAdmin: !user.isAdmin }).then(user => {
+          req.flash('success_messages', '使用者權限變更成功')
+          res.redirect('/admin/users')
+        })
       })
       .catch(err => next(err))
   }

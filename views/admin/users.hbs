@@ -1,0 +1,39 @@
+<h1>後台使用者管理</h1>
+
+
+  <div class="users-back-btn-group d-flex justify-content-end mt-3">
+    <a href='/admin/restaurants'>
+      <button type="button" class="btn btn-outline-warning mr-2">Restaurants</button>
+    </a>
+    <a href='/admin/users'>
+      <button type="button" class="btn btn-outline-success">Users</button>
+    </a>
+  </div>
+
+<br/>
+
+<table class="table">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">編號</th>
+      <th scope="col">Name</th>
+      <th scope="col">email</th>
+      <th scope="col">role</th>
+      <th scope="col">Change permissions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each users}}
+    <tr>
+      <th scope="row">{{this.id}}</th>
+      <td>{{this.name}}</td>
+      <td>{{ this.email }}</td>
+      <td {{#if this.isAdmin }} class="text-danger" {{/if}}>{{#if this.isAdmin }} admin {{else}} user {{/if}}</td>
+      <form action="/admin/users/{{ this.id }}/toggleAdmin/?_method=PATCH" method="POST">
+      <td><button type="submit" class="btn btn-link">set as {{#if this.isAdmin }} user {{else}} admin {{/if}}</button></td>
+      </form>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

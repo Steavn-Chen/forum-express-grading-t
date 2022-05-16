@@ -13,6 +13,9 @@ router.delete('/restaurants/:id', adminController.deleteRestaurant)
 router.post('/restaurants', upload.single('image'), adminController.postRestaurant)
 router.get('/restaurants', adminController.getRestaurants)
 
+router.get('/users', adminController.getUsers)
+router.patch('/users/:id/toggleAdmin', adminController.patchUser)
+
 router.use('/', (req, res) => res.redirect('/admin/restaurants'))
 
 module.exports = router
