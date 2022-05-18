@@ -1,0 +1,38 @@
+{{> admin-tabs route='categories'}}
+<br />
+
+<form action="/admin/categories" method="post">
+  <div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="category" aria-label="Recipient's username"
+      aria-describedby="button-addon2" name="categoryName">
+    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Create</button>
+  </div>
+</form>
+
+
+<table class="table">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">CategoryName</th>
+      <th scope="col">#</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each categories}}
+    <tr>
+      <th scope="row">{{this.id}}</th>
+      <td>{{this.name}}</td>
+      <td>
+        <a href="/admin/categories/{{this.id}}/edit" class="btn btn-warning">Edit</a>
+        <form action="/admin/categories/{{this.id}}?_method=DELETE" method="post" style="display: inline;">
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{/each}}
+
+  </tbody>
+</table>
+<br />
+<br />
