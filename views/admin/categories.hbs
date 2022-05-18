@@ -1,13 +1,13 @@
 {{> admin-tabs route='categories'}}
 <br />
 
-<form action="/admin/categories" method="post">
-  <div class="input-group mb-3">
+<div class="input-group mb-3">
+  <form action="/admin/categories" method="post">
     <input type="text" class="form-control" placeholder="category" aria-label="Recipient's username"
-      aria-describedby="button-addon2" name="categoryName">
+      aria-describedby="button-addon2" name="name">
     <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Create</button>
-  </div>
-</form>
+  </form>
+</div>
 
 
 <table class="table">
