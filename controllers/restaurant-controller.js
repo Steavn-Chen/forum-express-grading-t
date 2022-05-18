@@ -6,14 +6,23 @@ const restaurantController = {
       include: Category,
       raw: true,
       nest: true
+    }).then(restaurants => {
+      const data = restaurants.map((r, _rIndex) => ({
+        ...r,
+        description: r.description.substring(0, 50)
+      }))
+      return res.render('restaurants', { restaurants: data })
     })
-      .then(restaurants => {
-        const data = restaurants.map((r, rIndex) => ({
-          ...r,
-          description: r.description.substring(0, 50)
-        }))
-        return res.render('restaurants', { restaurants: data })
-      })
+  },
+  getRestaurant: (req, res) => {
+    return Restaurant.findByPk(req.params.id, {
+      include: Category,
+      raw: true,
+      nest: true
+    }).then(restaurant => {
+      if (!restaurant) throw new Error("Restaurant didn't exist!")
+      return res.render('restaurant', { restaurant })
+    })
   }
 }
 
