@@ -1,14 +1,28 @@
 {{> admin-tabs route='categories'}}
 <br />
 
-<div class="input-group mb-3">
-  <form action="/admin/categories" method="post">
-    <input type="text" class="form-control" placeholder="category" aria-label="Recipient's username"
-      aria-describedby="button-addon2" name="name">
-    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Create</button>
-  </form>
+<div class="d-flex align-items-center pt-3 pb-5 my-3 text-white-50 bg-purple">
+{{#if category}}
+    <form class="row" action="/admin/categories/{{category.id}}?_method=PUT" method="POST">
+      <div class="col-auto">
+        <input class="form-control" type="text" placeholder="name" name="name" value="{{category.name}}">
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-warning" type="submit">Update</button>
+        <a class="btn btn-link link-secondary" href="/admin/categories">or Create New</a>
+      </div>
+    </form>
+  {{else}}
+    <form class="row" action="/admin/categories" method="POST">
+      <div class="col-auto">
+        <input class="form-control" type="text" placeholder="Category Name" name="name">
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-success" type="submit">Create</button>
+      </div>
+    </form>
+  {{/if}}
 </div>
-
 
 <table class="table">
   <thead class="thead-dark">
@@ -24,14 +38,13 @@
       <th scope="row">{{this.id}}</th>
       <td>{{this.name}}</td>
       <td>
-        <a href="/admin/categories/{{this.id}}/edit" class="btn btn-warning">Edit</a>
+        <a href="/admin/categories/{{this.id}}" class="btn btn-warning">Edit</a>
         <form action="/admin/categories/{{this.id}}?_method=DELETE" method="post" style="display: inline;">
           <button type="submit" class="btn btn-danger">Delete</button>
         </form>
       </td>
     </tr>
     {{/each}}
-
   </tbody>
 </table>
 <br />
