@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs')
 const db = require('../models')
 const User = db.User
+const Comment = db.Comment
+const Restaurant = db.Restaurant
 const userController = {
   signUpPage: (req, res) => {
     return res.render('signup')
@@ -42,17 +44,33 @@ const userController = {
     res.redirect('/signIn')
   },
   getUser: (req, res, next) => {
-    console.log(req.user)
-    console.log(req.params.id)
-    // res.render('users/profile', { user: req.user})
     return User.findByPk(req.params.id, {
-      raw: true,
-      nest: true,
-      attributes: { exclude: ['password', 'isAdmin', 'createdAt', 'updatedAt'] }
-    }).then((user) => {
-      console.log('after', user)
+      // raw: true,
+      // nest: true,
+      attributes: {
+        exclude: ['password', 'isAdmin', 'createdAt', 'updatedAt']
+      },
+      include: [
+        {
+          model: Comment,
+          attributes: {
+            exclude: ['text', 'createdAt', 'updatedAt', 'userId']
+          },
+          include: [
+            { model: Restaurant, attributes: ['id', 'image'] }
+          ]
+        }
+      ]
+    }).then(user => {
       if (!user) throw new Error("User didn't exist!")
-      res.render('users/profile', { user })
+      const set = new Set()
+      user.dataValues.Comments = user.dataValues.Comments.filter(item =>
+        !set.has(item.dataValues.restaurantId)
+          ? set.add(item.dataValues.restaurantId)
+          : false
+      )
+      user.dataValues.commentCounts = user.dataValues.Comments.length
+      res.render('users/profile', { user: user.toJSON() })
     })
   }
 }
