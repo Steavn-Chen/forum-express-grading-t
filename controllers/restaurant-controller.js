@@ -47,24 +47,32 @@ const restaurantController = {
       ]
       // order: [[Comment, 'created_at', 'DESC']]
     })
-      .then((restaurant) => {
+      .then(restaurant => {
         if (!restaurant) throw new Error("Restaurant didn't exist!")
         return restaurant.increment('viewCounts', { by: 1 })
       })
-      .then((restaurant) =>
+      .then(restaurant =>
         res.render('restaurant', { restaurant: restaurant.toJSON() })
       )
-      .catch((err) => next(err))
+      .catch(err => next(err))
   },
   getDashboard: (req, res, next) => {
-    return Restaurant.findByPk(req.params.id, {
-      include: Category,
-      raw: true,
-      nest: true
-    })
-      .then(restaurant => {
+    return Promise.all([
+      Restaurant.findByPk(req.params.id, {
+        include: [Category]
+      }),
+      Comment.count({ where: { restaurant_id: req.params.id } })
+      // Comment.max(Sequelize.cast(Sequelize.col('restaurant_id'), 'DATEONLY'))
+      // Comment.findAndCountAll({
+      //   raw: true,
+      //   nest: true,
+      //   attributes: { exclude: ['id'] }
+      // })
+    ])
+      .then(([restaurant, commentLength]) => {
         if (!restaurant) throw new Error("Restaurant didn't exist!")
-        res.render('dashboard', { restaurant })
+        restaurant.dataValues.commentCounts = commentLength
+        res.render('dashboard', { restaurant: restaurant.toJSON() })
       })
       .catch(err => next(err))
   }
