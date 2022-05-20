@@ -3,7 +3,8 @@ const db = require('../models')
 const User = db.User
 const Comment = db.Comment
 const Restaurant = db.Restaurant
-const { getUser } = require('../helpers/auth-helpers')
+const { getUser } = require('../helpers/auth-helpers.js')
+const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const userController = {
   signUpPage: (req, res) => {
     return res.render('signup')
@@ -62,23 +63,26 @@ const userController = {
           include: [{ model: Restaurant, attributes: ['id', 'image'] }]
         }
       ]
-    }).then(user => {
-      if (!user) throw new Error("User didn't exist!")
-      if (user.dataValues.Comments) {
-        const set = new Set()
-        user.dataValues.Comments = user.dataValues.Comments.filter(item =>
-          !set.has(item.dataValues.restaurantId)
-            ? set.add(item.dataValues.restaurantId)
-            : false
-        )
-        user.dataValues.commentCounts = user.dataValues.Comments.length
-      }
-      res.render('users/profile', { user: user.toJSON() })
     })
+      .then(user => {
+        if (!user) throw new Error("User didn't exist!")
+        if (user.dataValues.Comments) {
+          const set = new Set()
+          user.dataValues.Comments = user.dataValues.Comments.filter(item =>
+            !set.has(item.dataValues.restaurantId)
+              ? set.add(item.dataValues.restaurantId)
+              : false
+          )
+          user.dataValues.commentCounts = user.dataValues.Comments.length
+        }
+        res.render('users/profile', { user: user.toJSON() })
+      })
       .catch(err => next(err))
   },
   editUser: (req, res, next) => {
-    if (Number(getUser(req).id) !== Number(req.params.id)) { throw new Error('Only edit your own information。') }
+    if (Number(getUser(req).id) !== Number(req.params.id)) {
+      throw new Error('Only edit your own information。')
+    }
     return User.findByPk(req.params.id, {
       raw: true,
       nest: true
@@ -86,6 +90,28 @@ const userController = {
       .then(user => {
         if (!user) throw new Error("User didn't exist!")
         return res.render('users/edit', { user })
+      })
+      .catch(err => next(err))
+  },
+  putUser: (req, res, next) => {
+    const { name, email } = req.body
+    if (!name || !email) throw new Error('Name and Email are required.')
+    const { file } = req
+    return Promise.all([
+      User.findByPk(req.params.id),
+      imgurFileHandler(file)
+    ])
+      .then(([user, filePath]) => {
+        if (!user) throw new Error("User didn't exist!")
+        return user.update({
+          name,
+          email,
+          image: filePath || null
+        })
+      })
+      .then(() => {
+        req.flash('success_messages', 'Edited successfully')
+        res.redirect(`/users/${req.params.id}`)
       })
       .catch(err => next(err))
   }

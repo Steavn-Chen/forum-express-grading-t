@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const passport = require('../config/passport.js')
 
+const upload = require('../middleware/multer.js')
+
 const restController = require('../controllers/restaurant-controller.js')
 const userController = require('../controllers/user-controller.js')
 const commentController = require('../controllers/comment-controller.js')
@@ -15,6 +17,7 @@ router.use('/admin', authenticatedAdmin, admin)
 
 router.get('/users/:id/edit', authenticated, userController.editUser)
 router.get('/users/:id', authenticated, userController.getUser)
+router.put('/users/:id', upload.single('image'), authenticated, userController.putUser)
 
 router.get('/signup', userController.signUpPage)
 router.post('/signup', userController.signUp)
