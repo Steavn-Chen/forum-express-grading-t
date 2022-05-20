@@ -7,17 +7,19 @@ const userController = {
   },
 
   signUp: (req, res, next) => {
-    if (req.body.password !== req.body.passwordCheck) throw new Error('Passwords do not match!')
+    if (req.body.password !== req.body.passwordCheck) { throw new Error('Passwords do not match!') }
     User.findOne({ where: { email: req.body.email } })
       .then(user => {
         if (user) throw new Error('Email already exists!')
         return bcrypt.hash(req.body.password, 10)
       })
-      .then(hash => User.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: hash
-      }))
+      .then(hash =>
+        User.create({
+          name: req.body.name,
+          email: req.body.email,
+          password: hash
+        })
+      )
       .then(() => {
         req.flash('success_messages', '成功註冊。')
         res.redirect('/signin')
@@ -38,6 +40,20 @@ const userController = {
     req.flash('success_messages', '登出成功 !')
     req.logout()
     res.redirect('/signIn')
+  },
+  getUser: (req, res, next) => {
+    console.log(req.user)
+    console.log(req.params.id)
+    // res.render('users/profile', { user: req.user})
+    return User.findByPk(req.params.id, {
+      raw: true,
+      nest: true,
+      attributes: { exclude: ['password', 'isAdmin', 'createdAt', 'updatedAt'] }
+    }).then((user) => {
+      console.log('after', user)
+      if (!user) throw new Error("User didn't exist!")
+      res.render('users/profile', { user })
+    })
   }
 }
 module.exports = userController

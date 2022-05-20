@@ -1,0 +1,120 @@
+<div class='card mb-3'>
+  <div class='row no-gutters'>
+    <div class='col-md-5'>
+      <img src='{{user.image}}' alt='...' style='width: 300px; height:300px' />
+    </div>
+    <div class='col-md-7'>
+      <div class='card-body my-3'>
+        <h4 class='card-title'>名稱: {{user.name}}</h4>
+        <h5 class='card-text my-2'>信箱: {{user.email}}</h5>
+        <h6 class='card-text mt-3'>{{user.Comments.length}} 間己評論的餐廳</h6>
+        <h6 class='card-text'>{{user.FavoritedRestaurants.length}}
+          間己收藏的餐廳</h6>
+        <h6 class='card-text'>{{user.Followings.length}}
+          followings (追蹤者)</h6>
+        <h6 class='card-text mb-3'>{{user.Followers.length}}
+          followers (追隨者)</h6>
+        <div class='btn-group'>
+          <a href='/restaurants' class='btn btn-secondary'>首頁</a>
+          {{#ifCond anotherUserId userId}}
+            <a
+              href='/users/{{user.id}}/edit'
+              class='btn btn-primary ml-3'
+            >編輯</a>
+          {{else}}
+            {{#if isFollower}}
+              <form
+                action='/following/{{anotherUserId}}?_method=DELETE'
+                method='POST'
+              >
+                <button
+                  type='submit'
+                  class='btn btn-danger ml-3'
+                >取消追隨</button></form>
+            {{else}}
+              <form action='/following/{{anotherUserId}}' method='POST'>
+                <button
+                  type='submit'
+                  class='btn btn-primary ml-3'
+                >追隨</button></form>
+            {{/if}}
+            <a
+              href='/users/{{loginUser.id}}'
+              class='btn btn-primary ml-3'
+            >回到個人資訊頁</a>
+          {{/ifCond}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-4'>
+    <div class='card'>
+      <div class='card-header'>{{user.Followings.length}}
+        followings (追蹤者)</div>
+      <div class='text-left m-3'>
+        {{#each user.Followings}}
+          <a href='/users/{{this.id}}'><img
+              src='{{this.image}}'
+              class='rounded mt-2'
+              alt='...'
+              style='width: 100px;'
+            /></a>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  <div class='col-8'>
+    <div class='card'>
+      <div class='card-header'>{{userComments.length}} 則己評論的餐廳</div>
+      <div class='text-left m-3'>
+        {{#each userComments}}
+          <a href='/restaurants/{{this.RestaurantId}}'><img
+              src='{{this.RestaurantImage}}'
+              class='rounded mt-2 ml-2'
+              alt='...'
+              style='width: 100px'
+            /></a>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='row mt-3'>
+  <div class='col-4'>
+    <div class='card'>
+      <div class='card-header'>{{user.Followers.length}}
+        followers (追隨者)</div>
+      <div class='text-left m-3'>
+        {{#each user.Followers}}
+          <a href='/users/{{this.id}}'><img
+              src='{{this.image}}'
+              class='rounded mt-2'
+              alt='...'
+              style='width: 100px;'
+            /></a>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  <div class='col-8'>
+    <div class='card'>
+      <div class='card-header'>{{user.FavoritedRestaurants.length}}
+        間己收藏的餐廳</div>
+      <div class='text-left m-3'>
+        {{#each user.FavoritedRestaurants}}
+          <a href='/restaurants/{{this.id}}'><img
+              src='{{this.image}}'
+              class='rounded mt-2 ml-2'
+              alt='...'
+              style='width: 100px'
+            /></a>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+
+</div>
