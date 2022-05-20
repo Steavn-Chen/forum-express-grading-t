@@ -5,7 +5,8 @@ module.exports = {
     } else {
       req.flash('error_messages', `${err}`)
     }
-    res.redirect('back')
+    // res.redirect('back') <--用 back 就沒法回把 flash message 顥示出來 也沒辦法回上一頁
+    res.redirect('/restaurants')
     next(err)
   }
 }

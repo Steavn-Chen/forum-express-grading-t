@@ -3,13 +3,16 @@ const db = require('../models')
 const User = db.User
 const Comment = db.Comment
 const Restaurant = db.Restaurant
+const { getUser } = require('../helpers/auth-helpers')
 const userController = {
   signUpPage: (req, res) => {
     return res.render('signup')
   },
 
   signUp: (req, res, next) => {
-    if (req.body.password !== req.body.passwordCheck) { throw new Error('Passwords do not match!') }
+    if (req.body.password !== req.body.passwordCheck) {
+      throw new Error('Passwords do not match!')
+    }
     User.findOne({ where: { email: req.body.email } })
       .then(user => {
         if (user) throw new Error('Email already exists!')
@@ -56,22 +59,35 @@ const userController = {
           attributes: {
             exclude: ['text', 'createdAt', 'updatedAt', 'userId']
           },
-          include: [
-            { model: Restaurant, attributes: ['id', 'image'] }
-          ]
+          include: [{ model: Restaurant, attributes: ['id', 'image'] }]
         }
       ]
     }).then(user => {
       if (!user) throw new Error("User didn't exist!")
-      const set = new Set()
-      user.dataValues.Comments = user.dataValues.Comments.filter(item =>
-        !set.has(item.dataValues.restaurantId)
-          ? set.add(item.dataValues.restaurantId)
-          : false
-      )
-      user.dataValues.commentCounts = user.dataValues.Comments.length
+      if (user.dataValues.Comments) {
+        const set = new Set()
+        user.dataValues.Comments = user.dataValues.Comments.filter(item =>
+          !set.has(item.dataValues.restaurantId)
+            ? set.add(item.dataValues.restaurantId)
+            : false
+        )
+        user.dataValues.commentCounts = user.dataValues.Comments.length
+      }
       res.render('users/profile', { user: user.toJSON() })
     })
+      .catch(err => next(err))
+  },
+  editUser: (req, res, next) => {
+    if (Number(getUser(req).id) !== Number(req.params.id)) { throw new Error('Only edit your own information。') }
+    return User.findByPk(req.params.id, {
+      raw: true,
+      nest: true
+    })
+      .then(user => {
+        if (!user) throw new Error("User didn't exist!")
+        return res.render('users/edit', { user })
+      })
+      .catch(err => next(err))
   }
 }
 module.exports = userController
