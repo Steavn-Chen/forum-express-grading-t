@@ -47,6 +47,7 @@ const userController = {
     req.logout()
     res.redirect('/signIn')
   },
+
   getUser: (req, res, next) => {
     return User.findByPk(req.params.id, {
       // raw: true,
@@ -95,7 +96,7 @@ const userController = {
   },
   putUser: (req, res, next) => {
     const { name, email } = req.body
-    if (!name || !email) throw new Error('Name and Email are required.')
+    if (!name) throw new Error('Name are required.')
     const { file } = req
     return Promise.all([
       User.findByPk(req.params.id),
@@ -106,11 +107,11 @@ const userController = {
         return user.update({
           name,
           email,
-          image: filePath || null
+          image: filePath || user.image
         })
       })
       .then(() => {
-        req.flash('success_messages', 'Edited successfully')
+        req.flash('success_messages', '使用者資料編輯成功')
         res.redirect(`/users/${req.params.id}`)
       })
       .catch(err => next(err))
