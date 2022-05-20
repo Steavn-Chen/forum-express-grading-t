@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate (models) {
       Restaurant.belongsTo(models.Category, { foreignKey: 'categoryId' })
-      Restaurant.hasMany(models.Comment, { foreignKey: 'commentId' })
+      Restaurant.hasMany(models.Comment, { foreignKey: 'restaurantId' })
     }
   };
   Restaurant.init({
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     openingHours: DataTypes.STRING,
     description: DataTypes.STRING,
     image: DataTypes.STRING,
-    viewCounts: DataTypes.STRING
+    viewCounts: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Restaurant',
