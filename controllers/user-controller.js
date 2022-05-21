@@ -155,7 +155,6 @@ const userController = {
   },
   addLike: (req, res, next) => {
     const { restaurantId } = req.params
-    console.log(restaurantId)
     return Promise.all([
       Restaurant.findByPk(restaurantId),
       Like.findOne({
@@ -178,7 +177,7 @@ const userController = {
   },
   removeLike: (req, res, next) => {
     const { restaurantId } = req.params
-    Like.findOne({
+    return Like.findOne({
       where: {
         userId: req.user.id,
         restaurantId

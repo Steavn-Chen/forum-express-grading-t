@@ -54,6 +54,10 @@ const restaurantController = {
           {
             model: User,
             as: 'FavoritedUsers'
+          },
+          {
+            model: User,
+            as: 'LikedUsers'
           }
         ]
         // order: [[Comment, 'created_at', 'DESC']]
@@ -63,7 +67,14 @@ const restaurantController = {
           if (!restaurant) throw new Error("Restaurant didn't exist!")
           const favoritedUsersId = restaurant.FavoritedUsers.some(
             f => f.id === req.user.id)
+          const islikedUserId = restaurant.LikedUsers.some(l => l.id === req.user.id)
+          // restaurant.dataValues = {
+          //   ...restaurant.dataValues,
+          //   isFavorited: favoritedUsersId,
+          //   isLiked: islikedUserId
+          // }
           restaurant.dataValues.isFavorited = favoritedUsersId
+          restaurant.dataValues.isLiked = islikedUserId
           return restaurant.increment('viewCounts', { by: 1 })
         })
         .then(restaurant => {
@@ -76,9 +87,11 @@ const restaurantController = {
         // })
         // .then(restaurant => {
         //   const isFavorited = restaurant.FavoritedUsers.some(fr => fr.id === req.user.id)
+        //   const isLiked = restaurant.LikedUsers.some(l => l.id === req.user.id)
         //   res.render('restaurant', {
         //     restaurant: restaurant.toJSON(),
-        //     isFavorited
+        //     isFavorited,
+        //     isLiked
         //   })
         // })
         .catch(err => next(err))
