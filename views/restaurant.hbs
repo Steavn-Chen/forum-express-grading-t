@@ -17,6 +17,20 @@
   <div class='col-md-8 mb-3'>
     <p style='white-space: break-spaces;'>{{restaurant.description}}</p>
     {{!-- <div class="d-grid gap-2"> --}}
+
+    <div class="d-flex">
+          {{#if restaurant.isFavorited}}
+          {{!-- {{#if isFavorited}} --}}
+          <form action="/favorite/{{restaurant.id}}?_method=DELETE" method="POST">
+            <button type="submit" class="btn btn-danger m-1">移除最愛</button>
+          </form>
+          {{else}}
+          <form action="/favorite/{{restaurant.id}}" method="POST">
+            <button type="submit" class="btn btn-primary m-1">加到最愛</button>
+          </form>
+          {{/if}}
+        </div>
+
       <div class="d-grid gap-2 col-6 mx-auto">
     <a href="/restaurants/{{restaurant.id}}/dashboard" class="btn btn-info">Dashboard</a>
     </div>

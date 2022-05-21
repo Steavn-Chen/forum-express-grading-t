@@ -22,9 +22,12 @@ const restaurantController = {
       }),
       Category.findAll({ raw: true })
     ]).then(([restaurants, categories]) => {
+      const favoritedRestaurantsId = req.user.FavoritedRestaurants.map(fr => fr.id)
       const data = restaurants.rows.map((r, _rIndex) => ({
         ...r,
-        description: r.description.substring(0, 50)
+        description: r.description.substring(0, 50),
+        // isFavorited: req.user && req.user.FavoritedRestaurants.map(fr => fr.id).includes(r.id)
+        isFavorited: req.user && favoritedRestaurantsId.includes(r.id)
       }))
       return res.render('restaurants', {
         restaurants: data,
@@ -35,27 +38,50 @@ const restaurantController = {
     })
   },
   getRestaurant: (req, res, next) => {
-    return Restaurant.findByPk(req.params.id, {
-      include: [
-        Category,
-        {
-          model: Comment,
-          separate: true,
-          order: [['created_at', 'DESC']],
-          include: User
-        }
-      ]
-      // order: [[Comment, 'created_at', 'DESC']]
-    })
-      .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        return restaurant.increment('viewCounts', { by: 1 })
+    return (
+      Restaurant.findByPk(req.params.id, {
+        include: [
+          Category,
+          {
+            model: Comment,
+            separate: true,
+            order: [['created_at', 'DESC']],
+            include: User
+          },
+          {
+            model: User,
+            as: 'FavoritedUsers'
+          }
+        ]
+        // order: [[Comment, 'created_at', 'DESC']]
       })
-      .then(restaurant =>
-        res.render('restaurant', { restaurant: restaurant.toJSON() })
-      )
-      .catch(err => next(err))
+        // 個人寫法
+        .then(restaurant => {
+          if (!restaurant) throw new Error("Restaurant didn't exist!")
+          const favoritedUsersId = restaurant.FavoritedUsers.some(
+            f => f.id === req.user.id)
+          restaurant.dataValues.isFavorited = favoritedUsersId
+          return restaurant.increment('viewCounts', { by: 1 })
+        })
+        .then(restaurant => {
+          res.render('restaurant', { restaurant: restaurant.toJSON() })
+        })
+        //   // 教案寫法
+        // .then(restaurant => {
+        //   if (!restaurant) throw new Error("Restaurant didn't exist!")
+        //   return restaurant.increment('viewCounts', { by: 1 })
+        // })
+        // .then(restaurant => {
+        //   const isFavorited = restaurant.FavoritedUsers.some(fr => fr.id === req.user.id)
+        //   res.render('restaurant', {
+        //     restaurant: restaurant.toJSON(),
+        //     isFavorited
+        //   })
+        // })
+        .catch(err => next(err))
+    )
   },
+
   getDashboard: (req, res, next) => {
     return Promise.all([
       Restaurant.findByPk(req.params.id, {
