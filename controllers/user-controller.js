@@ -50,7 +50,6 @@ const userController = {
     req.logout()
     res.redirect('/signIn')
   },
-
   getUser: (req, res, next) => {
     return User.findByPk(req.params.id, {
       // raw: true,
@@ -65,24 +64,74 @@ const userController = {
             exclude: ['text', 'createdAt', 'updatedAt', 'userId']
           },
           include: [{ model: Restaurant, attributes: ['id', 'image'] }]
-        }
+        },
+        { model: User, as: 'Followers' },
+        { model: User, as: 'Followings' },
+        { model: Restaurant, as: 'FavoritedRestaurants' }
       ]
     })
       .then(user => {
         if (!user) throw new Error("User didn't exist!")
+        let result = user.toJSON()
         if (user.dataValues.Comments) {
           const set = new Set()
-          user.dataValues.Comments = user.dataValues.Comments.filter(item =>
-            !set.has(item.dataValues.restaurantId)
-              ? set.add(item.dataValues.restaurantId)
-              : false
+          const Comments = result.Comments.filter(item =>
+            !set.has(item.restaurantId) ? set.add(item.restaurantId) : false
           )
-          user.dataValues.commentCounts = user.dataValues.Comments.length
+          result = {
+            ...result,
+            Comments,
+            commentCounts: Comments.length,
+            FollowingCounts: result.Followings.length,
+            FollowerCounts: result.Followers.length,
+            FavoritedRestaurantsCounts: result.FavoritedRestaurants.length
+          }
         }
-        res.render('users/profile', { user: user.toJSON() })
+        res.render('users/profile', { user: result })
       })
       .catch(err => next(err))
   },
+  // 未重構前
+  // getUser: (req, res, next) => {
+  //   return User.findByPk(req.params.id, {
+  //     // raw: true,
+  //     // nest: true,
+  //     attributes: {
+  //       exclude: ['password', 'isAdmin', 'createdAt', 'updatedAt']
+  //     },
+  //     include: [
+  //       {
+  //         model: Comment,
+  //         attributes: {
+  //           exclude: ['text', 'createdAt', 'updatedAt', 'userId']
+  //         },
+  //         include: [{ model: Restaurant, attributes: ['id', 'image'] }]
+  //       },
+  //       { model: User, as: 'Followers' },
+  //       { model: User, as: 'Followings' },
+  //       { model: Restaurant, as: 'FavoritedRestaurants' }
+  //     ]
+  //   })
+  //     .then(user => {
+  //       if (!user) throw new Error("User didn't exist!")
+  //       if (user.dataValues.Comments) {
+  //         const set = new Set()
+  //         user.dataValues.Comments = user.dataValues.Comments.filter(item =>
+  //           !set.has(item.dataValues.restaurantId)
+  //             ? set.add(item.dataValues.restaurantId)
+  //             : false
+  //         )
+  //         console.log(user)
+  //         user.dataValues.commentCounts = user.dataValues.Comments.length
+  //         user.dataValues.FollowingCounts = user.dataValues.Followings.length
+  //         user.dataValues.FollowerCounts = user.dataValues.Followers.length
+  //         user.dataValues.FavoritedRestaurantsCounts =
+  //           user.dataValues.FavoritedRestaurants.length
+  //       }
+  //       res.render('users/profile', { user: user.toJSON() })
+  //     })
+  //     .catch(err => next(err))
+  // },
   editUser: (req, res, next) => {
     if (Number(getUser(req).id) !== Number(req.params.id)) {
       throw new Error('Only edit your own information。')
@@ -119,27 +168,25 @@ const userController = {
 
   addFavorite: (req, res, next) => {
     const { restaurantId } = req.params
-    return (
-      Promise.all([
-        Restaurant.findByPk(restaurantId),
-        Favorite.findOne({
-          where: {
-            userId: req.user.id,
-            restaurantId
-          }
+    return Promise.all([
+      Restaurant.findByPk(restaurantId),
+      Favorite.findOne({
+        where: {
+          userId: req.user.id,
+          restaurantId
+        }
+      })
+    ])
+      .then(([restaurant, favorite]) => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (favorite) throw new Error('You have favorited this restaurant!')
+        return Favorite.create({
+          userId: req.user.id,
+          restaurantId
         })
-      ])
-        .then(([restaurant, favorite]) => {
-          if (!restaurant) throw new Error("Restaurant didn't exist!")
-          if (favorite) throw new Error('You have favorited this restaurant!')
-          return Favorite.create({
-            userId: req.user.id,
-            restaurantId
-          })
-        })
-        .then(() => res.redirect('back'))
-        .catch(err => next(err))
-    )
+      })
+      .then(() => res.redirect('back'))
+      .catch(err => next(err))
   },
   removeFavorite: (req, res, next) => {
     const { restaurantId } = req.params

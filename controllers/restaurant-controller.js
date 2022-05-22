@@ -1,4 +1,4 @@
-const { Restaurant, Category, Comment, User } = require('../models')
+const { Restaurant, Category, Comment, User, Favorite } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination.js')
 const restaurantController = {
   getRestaurants: (req, res) => {
@@ -104,24 +104,32 @@ const restaurantController = {
   },
 
   getDashboard: (req, res, next) => {
-    return Promise.all([
-      Restaurant.findByPk(req.params.id, {
-        include: [Category]
-      }),
-      Comment.count({ where: { restaurant_id: req.params.id } })
-      // Comment.max(Sequelize.cast(Sequelize.col('restaurant_id'), 'DATEONLY'))
-      // Comment.findAndCountAll({
-      //   raw: true,
-      //   nest: true,
-      //   attributes: { exclude: ['id'] }
-      // })
-    ])
-      .then(([restaurant, commentLength]) => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        restaurant.dataValues.commentCounts = commentLength
-        res.render('dashboard', { restaurant: restaurant.toJSON() })
-      })
-      .catch(err => next(err))
+    return (
+      Promise.all([
+        Restaurant.findByPk(req.params.id, {
+          include: [Category]
+        }),
+        Comment.count({ where: { restaurant_id: req.params.id } }),
+        Favorite.count({ where: { restaurantId: req.params.id } })
+      ])
+        // 重構後
+        .then(([restaurant, commentCounts, favoriteCounts]) => {
+          if (!restaurant) throw new Error("Restaurant didn't exist!")
+          // restaurant = restaurant.toJSON()
+          // restaurant.commentCounts = commentLength
+          // restaurant.favoriteCounts = favoriteLength
+          restaurant = { ...restaurant.toJSON(), commentCounts, favoriteCounts }
+          res.render('dashboard', { restaurant })
+        })
+        // 未重構前
+        // .then(([restaurant, commentLength, favoriteLength]) => {
+        //   if (!restaurant) throw new Error("Restaurant didn't exist!")
+        //   restaurant.dataValues.commentCounts = commentLength
+        //   restaurant.dataValues.favoriteCounts = favoriteLength
+        //   res.render('dashboard', { restaurant: restaurant.toJSON() })
+        // })
+        .catch(err => next(err))
+    )
   },
   getFeeds: (req, res, next) => {
     return Promise.all([
