@@ -147,9 +147,21 @@ const restaurantController = {
     })
   },
   getTopRestaurants: (req, res, next) => {
-    return Restaurant.findAll()
+    return Restaurant.findAll({
+      include: [{ model: User, as: 'FavoritedUsers' }]
+    })
       .then(restaurants => {
-        const result = restaurants.map(r => ({ ...r.toJSON() }))
+        // const faveriteRestaurantId = req.user.FavoritedRestaurants.map(fr => fr.id)
+        // console.log(faveriteRestaurantId)
+        const result = restaurants.map(r => ({
+          ...r.toJSON(),
+          favoritedCount: r.FavoritedUsers.length,
+          isFavorited:
+            req.user &&
+            req.user.FavoritedRestaurants.map(fr => fr.id).some(
+              f => f === r.id
+            )
+        })).sort((a, b) => b.favoritedCount - a.favoritedCount)
         if (!restaurants) throw new Error("Restaurant didn't exist!")
         res.render('top-restaurants', {
           restaurants: result

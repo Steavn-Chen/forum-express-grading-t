@@ -119,27 +119,29 @@ const userController = {
 
   addFavorite: (req, res, next) => {
     const { restaurantId } = req.params
-    return Promise.all([
-      Restaurant.findByPk(restaurantId),
-      Favorite.findOne({
-        where: {
-          userId: req.user.id,
-          restaurantId
-        }
-      })
-    ])
-      .then(([restaurant, favorite]) => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        if (favorite) throw new Error('You have favorited this restaurant!')
-        return Favorite.create({
-          userId: req.user.id,
-          restaurantId
+    return (
+      Promise.all([
+        Restaurant.findByPk(restaurantId),
+        Favorite.findOne({
+          where: {
+            userId: req.user.id,
+            restaurantId
+          }
         })
-      })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+      ])
+        .then(([restaurant, favorite]) => {
+          if (!restaurant) throw new Error("Restaurant didn't exist!")
+          if (favorite) throw new Error('You have favorited this restaurant!')
+          return Favorite.create({
+            userId: req.user.id,
+            restaurantId
+          })
+        })
+        .then(() => res.redirect('back'))
+        .catch(err => next(err))
+    )
   },
-  deleteFavorite: (req, res, next) => {
+  removeFavorite: (req, res, next) => {
     const { restaurantId } = req.params
     return Favorite.findOne({
       where: {
@@ -195,27 +197,29 @@ const userController = {
     return User.findAll({
       include: [
         {
-          model: User, as: 'Followers'
+          model: User,
+          as: 'Followers'
         }
       ]
-    })
-      .then(users => {
-        // users = users.map(user => ({
-        //   ...user.toJSON(),
-        //   followerCount: user.Followers.length,
-        //   isFollowed: req.user.Followings.some(f => f.id === user.id)
-        // }))
-        // users = users.sort((a, b) => b.followerCount - a.followerCount)
-        // res.render('top-users', { users: users })
+    }).then(users => {
+      // users = users.map(user => ({
+      //   ...user.toJSON(),
+      //   followerCount: user.Followers.length,
+      //   isFollowed: req.user.Followings.some(f => f.id === user.id)
+      // }))
+      // users = users.sort((a, b) => b.followerCount - a.followerCount)
+      // res.render('top-users', { users: users })
 
-        // 優化後的版本，保留原來撈出來的資料，可以做比對用。
-        const result = users.map(user => ({
+      // 優化後的版本，保留原來撈出來的資料，可以做比對用。
+      const result = users
+        .map(user => ({
           ...user.toJSON(),
           followerCount: user.Followers.length,
           isFollowed: req.user.Followings.some(f => f.id === user.id)
-        })).sort((a, b) => b.followerCount - a.followerCount)
-        res.render('top-users', { users: result })
-      })
+        }))
+        .sort((a, b) => b.followerCount - a.followerCount)
+      res.render('top-users', { users: result })
+    })
   },
   addFollowing: (req, res, next) => {
     const { userId } = req.params
