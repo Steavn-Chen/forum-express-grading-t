@@ -1,13 +1,13 @@
 const bcrypt = require('bcryptjs')
-const db = require('../models')
+const db = require('../../models')
 const User = db.User
 const Comment = db.Comment
 const Restaurant = db.Restaurant
 const Favorite = db.Favorite
 const Like = db.Like
 const Followship = db.Followership
-const { getUser } = require('../helpers/auth-helpers.js')
-const { imgurFileHandler } = require('../helpers/file-helpers.js')
+const { getUser } = require('../../helpers/auth-helpers.js')
+const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 const userController = {
   signUpPage: (req, res) => {
     return res.render('signup')

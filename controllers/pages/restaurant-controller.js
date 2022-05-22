@@ -1,5 +1,5 @@
-const { Restaurant, Category, Comment, User, Favorite } = require('../models')
-const { getOffset, getPagination } = require('../helpers/pagination.js')
+const { Restaurant, Category, Comment, User, Favorite } = require('../../models')
+const { getOffset, getPagination } = require('../../helpers/pagination.js')
 const restaurantController = {
   getRestaurants: (req, res) => {
     const DEFAULT_LIMIT = 9
