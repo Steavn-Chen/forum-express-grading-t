@@ -23,7 +23,9 @@ const restaurantController = {
       Category.findAll({ raw: true })
     ]).then(([restaurants, categories]) => {
       // console.log(restaurants)
-      const favoritedRestaurantsId = req.user.FavoritedRestaurants.map(fr => fr.id)
+      const favoritedRestaurantsId = req.user.FavoritedRestaurants.map(
+        fr => fr.id
+      )
       const likedRestaurantsId = req.user.LikedRestaurants.map(l => l.id)
       const data = restaurants.rows.map((r, _rIndex) => ({
         ...r,
@@ -66,8 +68,11 @@ const restaurantController = {
         .then(restaurant => {
           if (!restaurant) throw new Error("Restaurant didn't exist!")
           const favoritedUsersId = restaurant.FavoritedUsers.some(
-            f => f.id === req.user.id)
-          const islikedUserId = restaurant.LikedUsers.some(l => l.id === req.user.id)
+            f => f.id === req.user.id
+          )
+          const islikedUserId = restaurant.LikedUsers.some(
+            l => l.id === req.user.id
+          )
           // restaurant.dataValues = {
           //   ...restaurant.dataValues,
           //   isFavorited: favoritedUsersId,
@@ -134,14 +139,23 @@ const restaurantController = {
         order: [['createdAt', 'DESC']],
         include: ['User', 'Restaurant']
       })
-    ])
-      .then(([restaurants, comments]) => {
-        res.render('feeds', {
-          restaurants,
-          comments
+    ]).then(([restaurants, comments]) => {
+      res.render('feeds', {
+        restaurants,
+        comments
+      })
+    })
+  },
+  getTopRestaurants: (req, res, next) => {
+    return Restaurant.findAll()
+      .then(restaurants => {
+        const result = restaurants.map(r => ({ ...r.toJSON() }))
+        if (!restaurants) throw new Error("Restaurant didn't exist!")
+        res.render('top-restaurants', {
+          restaurants: result
         })
       })
+      .catch(err => next(err))
   }
 }
-
 module.exports = restaurantController
