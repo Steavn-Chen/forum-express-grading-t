@@ -40,6 +40,9 @@ router.delete('/like/:restaurantId', authenticated, userController.removeLike)
 router.delete('/comments/:id', authenticatedAdmin, commentController.deleteComment)
 router.post('/comments', authenticated, commentController.postComment)
 
+router.post('/following/:userId', authenticated, userController.addFollowing)
+router.delete('/following/:userId', authenticated, userController.removeFollowing)
+
 router.get('/', (req, res) => res.redirect('/restaurants'))
 
 router.use('/', generalErrorHandler)

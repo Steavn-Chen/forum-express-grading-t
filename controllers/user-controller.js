@@ -5,6 +5,7 @@ const Comment = db.Comment
 const Restaurant = db.Restaurant
 const Favorite = db.Favorite
 const Like = db.Like
+const Followship = db.Followership
 const { getUser } = require('../helpers/auth-helpers.js')
 const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const userController = {
@@ -199,15 +200,59 @@ const userController = {
       ]
     })
       .then(users => {
-        users = users.map(user => ({
+        // users = users.map(user => ({
+        //   ...user.toJSON(),
+        //   followerCount: user.Followers.length,
+        //   isFollowed: req.user.Followings.some(f => f.id === user.id)
+        // }))
+        // users = users.sort((a, b) => b.followerCount - a.followerCount)
+        // res.render('top-users', { users: users })
+
+        // 優化後的版本，保留原來撈出來的資料，可以做比對用。
+        const result = users.map(user => ({
           ...user.toJSON(),
           followerCount: user.Followers.length,
-          isFollowd: req.user.Followings.some(f => f.id === user.id)
-        }))
-        // users = users.sort((a, b) => b.followers - a.followers)
-        console.log(users)
-        res.render('top-users', { users: users })
+          isFollowed: req.user.Followings.some(f => f.id === user.id)
+        })).sort((a, b) => b.followerCount - a.followerCount)
+        res.render('top-users', { users: result })
       })
+  },
+  addFollowing: (req, res, next) => {
+    const { userId } = req.params
+    return Promise.all([
+      User.findByPk(userId),
+      Followship.findOne({
+        where: {
+          followerId: req.user.id,
+          followingId: userId
+        }
+      })
+    ])
+      .then(([user, followship]) => {
+        if (!user) throw new Error('')
+        if (followship) throw new Error('')
+        return Followship.create({
+          followerId: req.user.id,
+          followingId: userId
+        })
+      })
+      .then(() => res.redirect('back'))
+      .catch(err => next(err))
+  },
+  removeFollowing: (req, res, next) => {
+    const { userId } = req.params
+    return Followship.findOne({
+      where: {
+        followerId: req.user.id,
+        followingId: userId
+      }
+    })
+      .then(followship => {
+        if (!followship) throw new Error('')
+        return followship.destroy()
+      })
+      .then(() => res.redirect('back'))
+      .catch(err => next(err))
   }
 }
 module.exports = userController
