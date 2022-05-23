@@ -20,12 +20,21 @@ const categoryServices = {
     return Category.create({
       name: req.body.name
     })
-      .then(newCategory =>
-        cb(null, { category: newCategory })
-      )
+      .then(newCategory => cb(null, { category: newCategory }))
       .catch(err => cb(err))
   },
-  deleteCategories: (req, cb) => {
+  putCategory: (req, cb) => {
+    const { name } = req.body
+    if (!name) throw new Error('Category name is required!')
+    return Category.findByPk(req.params.id)
+      .then(category => {
+        if (!category) throw new Error("Category doesn't exist!")
+        return category.update({ name })
+      })
+      .then(putCategory => cb(null, { category: putCategory }))
+      .catch(err => cb(err))
+  },
+  deleteCategory: (req, cb) => {
     return Category.findByPk(req.params.id)
       .then(category => {
         if (!category) throw new Error("Category doesn't exist!")

@@ -1,5 +1,3 @@
-// const { Category } = require('../../models')
-
 const categoryServices = require('../../services/category-services.js')
 
 const categoryController = {
@@ -9,8 +7,11 @@ const categoryController = {
   postCategory: (req, res, next) => {
     categoryServices.postCategory(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
   },
-  deleteCategories: (req, res, next) => {
-    categoryServices.deleteCategories(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  putCategory: (req, res, next) => {
+    categoryServices.putCategory(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
+  deleteCategory: (req, res, next) => {
+    categoryServices.deleteCategory(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
   }
 }
 
