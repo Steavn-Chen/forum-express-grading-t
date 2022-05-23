@@ -1,12 +1,12 @@
 const express = require('express')
 const router = express.Router()
 
-const upload = require('../../middleware/multer.js')
+const upload = require('../../../middleware/multer.js')
 
-const adminController = require('../../controllers/pages/admin-controller.js')
-const categoryController = require('../../controllers/pages/category-controller.js')
+const adminController = require('../../../controllers/pages/admin-controller.js')
+const categoryController = require('../../../controllers/pages/category-controller.js')
 
-const { generalErrorHandler } = require('../../middleware/error-handler.js')
+const { generalErrorHandler } = require('../../../middleware/error-handler.js')
 
 router.get('/restaurants/create', adminController.createRestaurant)
 router.get('/restaurants/:id/edit', adminController.editRestaurant)

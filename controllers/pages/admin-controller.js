@@ -7,13 +7,6 @@ const adminController = {
   getRestaurants: (req, res, next) => {
     adminServices.getRestaurants(req, (err, data) => err ? next(err) : res.render('admin/restaurants', data))
   },
-  postRestaurant: (req, res, next) => {
-    adminServices.postRestaurant(req, (err, data) => {
-      if (err) return next(err)
-      req.flash('success_messages', 'restaurant was successfully created')
-      res.redirect('/admin/restaurants', data)
-    })
-  },
   deleteRestaurant: (req, res, next) => {
     adminServices.deleteRestaurant(req, (err, data) => err ? next(err) : res.redirect('/admin/restaurants', data))
   },
@@ -25,6 +18,14 @@ const adminController = {
         res.render('admin/create-restaurant', { categories })
       )
       .catch(err => next(err))
+  },
+  postRestaurant: (req, res, next) => {
+    adminServices.postRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', 'restaurant was successfully created')
+      res.redirect('/admin/restaurants')
+      // res.redirect('/admin/restaurants', data) // <--回傳data的話就無法回到/admin/restaurants
+    })
   },
   getRestaurant: (req, res, next) => {
     adminServices.getRestaurant(req, (err, data) => err ? next(err) : res.render('admin/restaurant', data))
@@ -45,6 +46,7 @@ const adminController = {
       if (err) return next(err)
       req.flash('success_messages', 'restaurant was successfully to update')
       res.redirect('/admin/restaurants')
+      // res.redirect('/admin/restaurants', data) // <--回傳data的話就無法回到/admin/restaurants
     })
   },
 
