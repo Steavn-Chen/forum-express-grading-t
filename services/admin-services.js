@@ -23,6 +23,18 @@ const adminServices = {
       })
       .catch(err => cb(err))
   },
+  getRestaurant: (req, cb) => {
+    Restaurant.findByPk(req.params.id, {
+      raw: true,
+      nest: true,
+      include: [Category]
+    })
+      .then(restaurant => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        cb(null, { restaurant })
+      })
+      .catch(err => cb(err))
+  },
   postRestaurant: (req, cb) => {
     const { name, tel, address, openingHours, description, categoryId } =
       req.body

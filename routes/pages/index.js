@@ -8,7 +8,7 @@ const restController = require('../../controllers/pages/restaurant-controller.js
 const userController = require('../../controllers/pages/user-controller.js')
 const commentController = require('../../controllers/pages/comment-controller.js')
 
-const admin = require('./modules/admin.js')
+const admin = require('../modules/admin.js')
 
 const { authenticated, authenticatedAdmin } = require('../../middleware/auth.js')
 const { generalErrorHandler } = require('../../middleware/error-handler.js')
