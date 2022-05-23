@@ -5,26 +5,9 @@ const categoryServices = require('../../services/category-services.js')
 const categoryController = {
   getCategories: (req, res, next) => {
     categoryServices.getCategories(req, (err, data) => err ? next(err) : res.render('admin/categories', data))
-    // return Promise.all([
-    //   Category.findAll({ raw: true }),
-    //   req.params.id ? Category.findByPk(req.params.id, { raw: true }) : null
-    // ])
-    //   .then(([categories, category]) => {
-    //     res.render('admin/categories', {
-    //       categories,
-    //       category
-    //     })
-    //   })
-    //   .catch(err => next(err))
   },
   postCategory: (req, res, next) => {
-    const { name } = req.body
-    if (!name) throw new Error('Category name is required!')
-    return Category.create({
-      name: req.body.name
-    })
-      .then(() => res.redirect('/admin/categories'))
-      .catch(err => next(err))
+    categoryServices.postCategory(req, (err, data) => err ? next(err) : res.redirect('/admin/categories', data))
   },
   putCategories: (req, res, next) => {
     const { name } = req.body
