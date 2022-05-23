@@ -24,6 +24,15 @@ const categoryServices = {
         cb(null, { category: newCategory })
       )
       .catch(err => cb(err))
+  },
+  deleteCategories: (req, cb) => {
+    return Category.findByPk(req.params.id)
+      .then(category => {
+        if (!category) throw new Error("Category doesn't exist!")
+        return category.destroy()
+      })
+      .then(deleteCategory => cb(null, { category: deleteCategory }))
+      .catch(err => cb(err))
   }
 }
 

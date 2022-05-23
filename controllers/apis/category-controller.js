@@ -8,6 +8,9 @@ const categoryController = {
   },
   postCategory: (req, res, next) => {
     categoryServices.postCategory(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
+  deleteCategories: (req, res, next) => {
+    categoryServices.deleteCategories(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
   }
 }
 
