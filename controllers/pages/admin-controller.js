@@ -7,6 +7,16 @@ const adminController = {
   getRestaurants: (req, res, next) => {
     adminServices.getRestaurants(req, (err, data) => err ? next(err) : res.render('admin/restaurants', data))
   },
+  postRestaurant: (req, res, next) => {
+    adminServices.postRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', 'restaurant was successfully created')
+      res.redirect('/admin/restaurants', data)
+    })
+  },
+  deleteRestaurant: (req, res, next) => {
+    adminServices.deleteRestaurant(req, (err, data) => err ? next(err) : res.redirect('/admin/restaurants', data))
+  },
   createRestaurant: (req, res, next) => {
     return Category.findAll({
       raw: true
@@ -16,29 +26,7 @@ const adminController = {
       )
       .catch(err => next(err))
   },
-  postRestaurant: (req, res, next) => {
-    const { name, tel, address, openingHours, description, categoryId } =
-      req.body
-    if (!name) throw new Error('Restaurant name is required!')
-    const { file } = req
-    imgurFileHandler(file)
-      .then(filePath =>
-        Restaurant.create({
-          name,
-          tel,
-          address,
-          openingHours,
-          description,
-          image: filePath || null,
-          categoryId
-        })
-      )
-      .then(() => {
-        req.flash('success_messages', 'restaurant was successfully created')
-        res.redirect('/admin/restaurants')
-      })
-      .catch(err => next(err))
-  },
+
   getRestaurant: (req, res, next) => {
     Restaurant.findByPk(req.params.id, {
       raw: true,
@@ -86,17 +74,7 @@ const adminController = {
       })
       .catch(err => next(err))
   },
-  deleteRestaurant: (req, res, next) => {
-    return Restaurant.findByPk(req.params.id)
-      .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        return restaurant.destroy()
-      })
-      .then(() => {
-        res.redirect('/admin/restaurants')
-      })
-      .catch(err => next(err))
-  },
+
   getUsers: (req, res, next) => {
     return User.findAll({
       raw: true
