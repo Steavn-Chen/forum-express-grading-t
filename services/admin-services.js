@@ -1,4 +1,4 @@
-const { Restaurant, Category } = require('../models')
+const { Restaurant, Category, User } = require('../models')
 const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const { getOffset, getPagination } = require('../helpers/pagination.js')
 
@@ -89,6 +89,14 @@ const adminServices = {
       .then(putRestaurant => {
         cb(null, { restaurant: putRestaurant })
       })
+      .catch(err => cb(err))
+  },
+  getUsers: (req, cb) => {
+    return User.findAll({
+      raw: true
+    }).then(users => {
+      cb(null, { users: users })
+    })
       .catch(err => cb(err))
   }
 }

@@ -1,4 +1,4 @@
-// const { Restaurant, Category } = require('../../models')
+// const { Restaurant, Category, User } = require('../../models')
 // const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 // const { getOffset, getPagination } = require('../../helpers/pagination.js')
 
@@ -19,6 +19,9 @@ const adminController = {
   },
   putRestaurant: (req, res, next) => {
     adminServices.putRestaurant(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
+  getUsers: (req, res, next) => {
+    adminServices.getUsers(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
   }
 }
 
