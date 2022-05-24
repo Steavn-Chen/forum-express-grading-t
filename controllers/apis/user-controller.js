@@ -3,7 +3,7 @@ const db = require('../../models')
 const User = db.User
 const Comment = db.Comment
 const Restaurant = db.Restaurant
-// const Favorite = db.Favorite
+const Favorite = db.Favorite
 // const Like = db.Like
 // const Followship = db.Followership
 // const { getUser } = require('../../helpers/auth-helpers.js')
@@ -49,6 +49,11 @@ const userController = {
   },
   getTopUsers: (req, res, next) => {
     userServices.getTopUsers(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  addFavorite: (req, res, next) => {
+    userServices.addFavorite(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })
     )
   }

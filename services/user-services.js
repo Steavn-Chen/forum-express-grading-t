@@ -1,12 +1,12 @@
 const bcrypt = require('bcryptjs')
-const { User, Comment, Restaurant } = require('../models')
+const { User, Comment, Restaurant, Favorite } = require('../models')
 const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const { Op } = require('sequelize')
 
 const userServices = {
   signUp: (req, cb) => {
     const { name, email, password, passwordCheck } = req.body
-    if (!password || !passwordCheck || !name || !email) throw new Error('所有欄位都是必填的!')
+    if (!password || !passwordCheck || !name || !email) { throw new Error('所有欄位都是必填的!') }
     if (password !== passwordCheck) {
       throw new Error('Passwords do not match!')
     }
@@ -85,10 +85,12 @@ const userServices = {
       })
     ])
       .then(([user, filePath, emailData]) => {
-        const emailCheck = emailData.map(e => e.dataValues.email).includes(email)
+        const emailCheck = emailData
+          .map(e => e.dataValues.email)
+          .includes(email)
         if (!user) throw new Error("User didn't exist!")
         if (emailCheck) throw new Error('Email is used!')
-        if (Number(req.user.id) !== Number(req.params.id)) throw new Error('只能編輯自己的資料。')
+        if (Number(req.user.id) !== Number(req.params.id)) { throw new Error('只能編輯自己的資料。') }
         return user.update({
           name,
           email,
@@ -120,6 +122,28 @@ const userServices = {
           .sort((a, b) => b.followerCount - a.followerCount)
         cb(null, { users: result })
       })
+      .catch(err => cb(err))
+  },
+  addFavorite: (req, cb) => {
+    const { restaurantId } = req.params
+    return Promise.all([
+      Restaurant.findByPk(restaurantId),
+      Favorite.findOne({
+        where: {
+          userId: req.user.id,
+          restaurantId
+        }
+      })
+    ])
+      .then(([restaurant, favorite]) => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (favorite) throw new Error('You have favorited this restaurant!')
+        return Favorite.create({
+          userId: req.user.id,
+          restaurantId
+        })
+      })
+      .then(favorited => cb(null, { favorited }))
       .catch(err => cb(err))
   }
 }
