@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const { User, Comment, Restaurant } = require('../models')
 const { imgurFileHandler } = require('../helpers/file-helpers.js')
+const { Op } = require('sequelize')
 
 const userServices = {
   signUp: (req, cb) => {
@@ -72,17 +73,30 @@ const userServices = {
     const { name, email } = req.body
     if (!name || !email) throw new Error('Name of Email are required.')
     const { file } = req
-    return Promise.all([User.findByPk(req.params.id), imgurFileHandler(file)])
-      .then(([user, filePath]) => {
+    return Promise.all([
+      User.findByPk(req.params.id),
+      imgurFileHandler(file),
+      User.findAll({
+        where: {
+          email: {
+            [Op.not]: [req.user.email]
+          }
+        }
+      })
+    ])
+      .then(([user, filePath, emailData]) => {
+        const emailCheck = emailData.map((e) => e.dataValues.email).includes(email)
         if (!user) throw new Error("User didn't exist!")
+        if (emailCheck) throw new Error('Email is used!')
+        if (Number(req.user.id) !== Number(req.params.id)) throw new Error('只能編輯自己的資料。')
         return user.update({
           name,
           email,
           image: filePath || user.image
         })
       })
-      .then((putUser) => {
-        const { isAdmin, password, ...result } = putUser
+      .then(putUser => {
+        const { isAdmin, password, ...result } = putUser.toJSON()
         cb(null, { user: result })
       })
       .catch(err => cb(err))
