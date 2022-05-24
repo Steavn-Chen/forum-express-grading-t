@@ -67,13 +67,16 @@ const restaurantServices = {
       })
         // 個人寫法
         .then(restaurant => {
+          console.log(req.user)
           if (!restaurant) throw new Error("Restaurant didn't exist!")
           const favoritedUsersId = restaurant.FavoritedUsers.some(
-            f => f.id === req.user && req.user.id
+            f => f.id === req.user?.id
           )
           const isLikedUserId = restaurant.LikedUsers.some(
-            l => l.id === req.user && req.user.id
+            l => l.id === (req.user && req.user.id)
           )
+          console.log('favoritedUsersId', favoritedUsersId)
+          console.log('isLikedUserId', isLikedUserId)
           // restaurant.dataValues = {
           //   ...restaurant.dataValues,
           //   isFavorited: favoritedUsersId,

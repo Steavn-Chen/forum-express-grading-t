@@ -8,7 +8,7 @@ const userController = {
       delete userData.password
       const { password, ...newUserData } = userData
       console.log(newUserData)
-      const token = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: '1d' })
+      const token = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: '5d' })
       res.json({
         status: 'success',
         data: {
