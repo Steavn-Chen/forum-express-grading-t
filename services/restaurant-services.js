@@ -1,4 +1,4 @@
-const { Restaurant, Category } = require('../models')
+const { Restaurant, Category, User, Comment } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination.js')
 
 const restaurantServices = {
@@ -20,27 +20,89 @@ const restaurantServices = {
         nest: true
       }),
       Category.findAll({ raw: true })
-    ]).then(([restaurants, categories]) => {
-      const favoritedRestaurantsId = req.user?.FavoritedRestaurants
-        ? req.user.FavoritedRestaurants.map(fr => fr.id)
-        : []
-      const likedRestaurantsId = req.user?.LikedRestaurants
-        ? req.user.LikedRestaurants.map(l => l.id)
-        : []
-      const data = restaurants.rows.map((r, _rIndex) => ({
-        ...r,
-        description: r.description.substring(0, 50),
-        isFavorited: favoritedRestaurantsId.includes(r.id),
-        isLiked: likedRestaurantsId.includes(r.id)
-      }))
-      return cb(null, {
-        restaurants: data,
-        categories,
-        categoryId,
-        pagination: getPagination(limit, page, restaurants.count)
+    ])
+      .then(([restaurants, categories]) => {
+        const favoritedRestaurantsId = req.user?.FavoritedRestaurants
+          ? req.user.FavoritedRestaurants.map(fr => fr.id)
+          : []
+        const likedRestaurantsId = req.user?.LikedRestaurants
+          ? req.user.LikedRestaurants.map(l => l.id)
+          : []
+        const data = restaurants.rows.map((r, _rIndex) => ({
+          ...r,
+          description: r.description.substring(0, 50),
+          isFavorited: favoritedRestaurantsId.includes(r.id),
+          isLiked: likedRestaurantsId.includes(r.id)
+        }))
+        return cb(null, {
+          restaurants: data,
+          categories,
+          categoryId,
+          pagination: getPagination(limit, page, restaurants.count)
+        })
       })
-    })
       .catch(err => cb(err))
+  },
+  getRestaurant: (req, cb) => {
+    return (
+      Restaurant.findByPk(req.params.id, {
+        include: [
+          Category,
+          {
+            model: Comment,
+            separate: true,
+            order: [['created_at', 'DESC']],
+            include: User
+          },
+          {
+            model: User,
+            as: 'FavoritedUsers'
+          },
+          {
+            model: User,
+            as: 'LikedUsers'
+          }
+        ]
+        // order: [[Comment, 'created_at', 'DESC']]
+      })
+        // 個人寫法
+        .then(restaurant => {
+          if (!restaurant) throw new Error("Restaurant didn't exist!")
+          const favoritedUsersId = restaurant.FavoritedUsers.some(
+            f => f.id === req.user && req.user.id
+          )
+          const islikedUserId = restaurant.LikedUsers.some(
+            l => l.id === req.user && req.user.id
+          )
+          // restaurant.dataValues = {
+          //   ...restaurant.dataValues,
+          //   isFavorited: favoritedUsersId,
+          //   isLiked: islikedUserId
+          // }
+          restaurant.dataValues.isFavorited = favoritedUsersId
+          restaurant.dataValues.isLiked = islikedUserId
+          return restaurant.increment('viewCounts', { by: 1 })
+        })
+        .then(restaurant => {
+          cb(null, { restaurant: restaurant.toJSON() })
+        })
+        .catch(err => cb(err))
+    //   // 教案寫法
+    // .then(restaurant => {
+    //   if (!restaurant) throw new Error("Restaurant didn't exist!")
+    //   return restaurant.increment('viewCounts', { by: 1 })
+    // })
+    // .then(restaurant => {
+    //   const isFavorited = restaurant.FavoritedUsers.some(fr => fr.id === req.user && req.user.id)
+    //   const isLiked = restaurant.LikedUsers.some(l => l.id === req.user && req.user.id)
+    //   res.json({
+    //     restaurant: restaurant.toJSON(),
+    //     isFavorited,
+    //     isLiked
+    //   })
+    // })
+    // .catch(err => next(err))
+    )
   }
 }
 

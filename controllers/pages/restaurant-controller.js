@@ -9,63 +9,8 @@ const restaurantController = {
     )
   },
   getRestaurant: (req, res, next) => {
-    return (
-      Restaurant.findByPk(req.params.id, {
-        include: [
-          Category,
-          {
-            model: Comment,
-            separate: true,
-            order: [['created_at', 'DESC']],
-            include: User
-          },
-          {
-            model: User,
-            as: 'FavoritedUsers'
-          },
-          {
-            model: User,
-            as: 'LikedUsers'
-          }
-        ]
-        // order: [[Comment, 'created_at', 'DESC']]
-      })
-        // 個人寫法
-        .then(restaurant => {
-          if (!restaurant) throw new Error("Restaurant didn't exist!")
-          const favoritedUsersId = restaurant.FavoritedUsers.some(
-            f => f.id === req.user.id
-          )
-          const islikedUserId = restaurant.LikedUsers.some(
-            l => l.id === req.user.id
-          )
-          // restaurant.dataValues = {
-          //   ...restaurant.dataValues,
-          //   isFavorited: favoritedUsersId,
-          //   isLiked: islikedUserId
-          // }
-          restaurant.dataValues.isFavorited = favoritedUsersId
-          restaurant.dataValues.isLiked = islikedUserId
-          return restaurant.increment('viewCounts', { by: 1 })
-        })
-        .then(restaurant => {
-          res.render('restaurant', { restaurant: restaurant.toJSON() })
-        })
-        //   // 教案寫法
-        // .then(restaurant => {
-        //   if (!restaurant) throw new Error("Restaurant didn't exist!")
-        //   return restaurant.increment('viewCounts', { by: 1 })
-        // })
-        // .then(restaurant => {
-        //   const isFavorited = restaurant.FavoritedUsers.some(fr => fr.id === req.user.id)
-        //   const isLiked = restaurant.LikedUsers.some(l => l.id === req.user.id)
-        //   res.render('restaurant', {
-        //     restaurant: restaurant.toJSON(),
-        //     isFavorited,
-        //     isLiked
-        //   })
-        // })
-        .catch(err => next(err))
+    restaurantServices.getRestaurant(req, (err, data) =>
+      err ? next(err) : res.render('restaurant', data)
     )
   },
 
