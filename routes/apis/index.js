@@ -9,6 +9,7 @@ const { apiErrorHandler } = require('../../middleware/error-handler.js')
 
 router.use('/admin', admin)
 
+router.get('/restaurants/top', restController.getTopRestaurants)
 router.get('/restaurants/feeds', restController.getFeeds)
 router.get('/restaurants/:id/dashboard', restController.getDashboard)
 router.get('/restaurants/:id', restController.getRestaurant)

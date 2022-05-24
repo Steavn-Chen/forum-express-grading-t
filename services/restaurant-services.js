@@ -71,7 +71,7 @@ const restaurantServices = {
           const favoritedUsersId = restaurant.FavoritedUsers.some(
             f => f.id === req.user && req.user.id
           )
-          const islikedUserId = restaurant.LikedUsers.some(
+          const isLikedUserId = restaurant.LikedUsers.some(
             l => l.id === req.user && req.user.id
           )
           // restaurant.dataValues = {
@@ -80,7 +80,7 @@ const restaurantServices = {
           //   isLiked: islikedUserId
           // }
           restaurant.dataValues.isFavorited = favoritedUsersId
-          restaurant.dataValues.isLiked = islikedUserId
+          restaurant.dataValues.isLiked = isLikedUserId
           return restaurant.increment('viewCounts', { by: 1 })
         })
         .then(restaurant => {
@@ -140,6 +140,29 @@ const restaurantServices = {
         cb(null, {
           restaurants,
           comments
+        })
+      })
+      .catch(err => cb(err))
+  },
+  getTopRestaurants: (req, cb) => {
+    return Restaurant.findAll({
+      include: [{ model: User, as: 'FavoritedUsers' }]
+    })
+      .then(restaurants => {
+        const result = restaurants
+          .map(r => ({
+            ...r.toJSON(),
+            favoritedCount: r.FavoritedUsers.length,
+            isFavorited:
+              req.user &&
+              req.user.FavoritedRestaurants.map(fr => fr.id).some(
+                f => f === r.id
+              )
+          }))
+          .sort((a, b) => b.favoritedCount - a.favoritedCount)
+        if (!restaurants) throw new Error("Restaurant didn't exist!")
+        cb(null, {
+          restaurants: result
         })
       })
       .catch(err => cb(err))
