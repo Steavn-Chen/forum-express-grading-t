@@ -1,4 +1,4 @@
-const { Restaurant, User, Category } = require('../../models')
+const { Restaurant, Category } = require('../../models')
 // const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 
 const adminServices = require('../../services/admin-services.js')
@@ -49,23 +49,18 @@ const adminController = {
       // res.redirect('/admin/restaurants', data) // <--回傳data的話就無法回到/admin/restaurants
     })
   },
-
   getUsers: (req, res, next) => {
     adminServices.getUsers(req, (err, data) => err ? next(err) : res.render('admin/users', data))
   },
   patchUser: (req, res, next) => {
-    return User.findByPk(req.params.id)
-      .then(user => {
-        if (user.name === 'root' || user.name === 'admin') {
-          req.flash('error_messages', '禁止變更 root 權限')
-          return res.redirect('back')
-        }
-        return user.update({ isAdmin: !user.isAdmin }).then(user => {
-          req.flash('success_messages', '使用者權限變更成功')
-          res.redirect('/admin/users')
-        })
-      })
-      .catch(err => next(err))
+    adminServices.patchUser(req, (err, data) => {
+      if (err) {
+        req.flash('error_messages', '禁止變更 root 權限')
+        return res.redirect('back')
+      }
+      req.flash('success_messages', '使用者權限變更成功')
+      res.redirect('/admin/users')
+    })
   }
 }
 

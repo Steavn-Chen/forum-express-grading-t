@@ -98,6 +98,18 @@ const adminServices = {
       cb(null, { users: users })
     })
       .catch(err => cb(err))
+  },
+  patchUser: (req, cb) => {
+    return User.findByPk(req.params.id)
+      .then(user => {
+        if (!user) throw new Error("User didn't exist!")
+        if (user.name === 'root' || user.name === 'admin') throw new Error('禁止變更 root 權限!')
+        return user.update({ isAdmin: !user.isAdmin })
+          .then(user => {
+            cb(null, user)
+          })
+      })
+      .catch(err => cb(err))
   }
 }
 

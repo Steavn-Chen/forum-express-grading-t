@@ -18,5 +18,6 @@ router.get('/categories', categoryController.getCategories)
 router.post('/categories', categoryController.postCategory)
 
 router.get('/users', adminController.getUsers)
+router.patch('/users/:id/toggleAdmin', adminController.patchUser)
 
 module.exports = router
