@@ -1,4 +1,4 @@
-const { Restaurant, Category, User, Comment } = require('../models')
+const { Restaurant, Category, User, Comment, Favorite } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination.js')
 
 const restaurantServices = {
@@ -44,49 +44,48 @@ const restaurantServices = {
       .catch(err => cb(err))
   },
   getRestaurant: (req, cb) => {
-    return (
-      Restaurant.findByPk(req.params.id, {
-        include: [
-          Category,
-          {
-            model: Comment,
-            separate: true,
-            order: [['created_at', 'DESC']],
-            include: User
-          },
-          {
-            model: User,
-            as: 'FavoritedUsers'
-          },
-          {
-            model: User,
-            as: 'LikedUsers'
-          }
-        ]
-        // order: [[Comment, 'created_at', 'DESC']]
+    return Restaurant.findByPk(req.params.id, {
+      include: [
+        Category,
+        {
+          model: Comment,
+          separate: true,
+          order: [['created_at', 'DESC']],
+          include: User
+        },
+        {
+          model: User,
+          as: 'FavoritedUsers'
+        },
+        {
+          model: User,
+          as: 'LikedUsers'
+        }
+      ]
+      // order: [[Comment, 'created_at', 'DESC']]
+    })
+    // 個人寫法
+      .then(restaurant => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        const favoritedUsersId = restaurant.FavoritedUsers.some(
+          f => f.id === req.user && req.user.id
+        )
+        const islikedUserId = restaurant.LikedUsers.some(
+          l => l.id === req.user && req.user.id
+        )
+        // restaurant.dataValues = {
+        //   ...restaurant.dataValues,
+        //   isFavorited: favoritedUsersId,
+        //   isLiked: islikedUserId
+        // }
+        restaurant.dataValues.isFavorited = favoritedUsersId
+        restaurant.dataValues.isLiked = islikedUserId
+        return restaurant.increment('viewCounts', { by: 1 })
       })
-        // 個人寫法
-        .then(restaurant => {
-          if (!restaurant) throw new Error("Restaurant didn't exist!")
-          const favoritedUsersId = restaurant.FavoritedUsers.some(
-            f => f.id === req.user && req.user.id
-          )
-          const islikedUserId = restaurant.LikedUsers.some(
-            l => l.id === req.user && req.user.id
-          )
-          // restaurant.dataValues = {
-          //   ...restaurant.dataValues,
-          //   isFavorited: favoritedUsersId,
-          //   isLiked: islikedUserId
-          // }
-          restaurant.dataValues.isFavorited = favoritedUsersId
-          restaurant.dataValues.isLiked = islikedUserId
-          return restaurant.increment('viewCounts', { by: 1 })
-        })
-        .then(restaurant => {
-          cb(null, { restaurant: restaurant.toJSON() })
-        })
-        .catch(err => cb(err))
+      .then(restaurant => {
+        cb(null, { restaurant: restaurant.toJSON() })
+      })
+      .catch(err => cb(err))
     //   // 教案寫法
     // .then(restaurant => {
     //   if (!restaurant) throw new Error("Restaurant didn't exist!")
@@ -102,7 +101,21 @@ const restaurantServices = {
     //   })
     // })
     // .catch(err => next(err))
-    )
+  },
+  getDashboard: (req, cb) => {
+    return Promise.all([
+      Restaurant.findByPk(req.params.id, {
+        include: [Category]
+      }),
+      Comment.count({ where: { restaurant_id: req.params.id } }),
+      Favorite.count({ where: { restaurantId: req.params.id } })
+    ])
+      .then(([restaurant, commentCounts, favoriteCounts]) => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        const result = { ...restaurant.toJSON(), commentCounts, favoriteCounts }
+        cb(null, { restaurant: result })
+      })
+      .catch(err => cb(err))
   }
 }
 

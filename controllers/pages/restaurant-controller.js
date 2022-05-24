@@ -13,33 +13,9 @@ const restaurantController = {
       err ? next(err) : res.render('restaurant', data)
     )
   },
-
   getDashboard: (req, res, next) => {
-    return (
-      Promise.all([
-        Restaurant.findByPk(req.params.id, {
-          include: [Category]
-        }),
-        Comment.count({ where: { restaurant_id: req.params.id } }),
-        Favorite.count({ where: { restaurantId: req.params.id } })
-      ])
-        // 重構後
-        .then(([restaurant, commentCounts, favoriteCounts]) => {
-          if (!restaurant) throw new Error("Restaurant didn't exist!")
-          // restaurant = restaurant.toJSON()
-          // restaurant.commentCounts = commentLength
-          // restaurant.favoriteCounts = favoriteLength
-          restaurant = { ...restaurant.toJSON(), commentCounts, favoriteCounts }
-          res.render('dashboard', { restaurant })
-        })
-        // 未重構前
-        // .then(([restaurant, commentLength, favoriteLength]) => {
-        //   if (!restaurant) throw new Error("Restaurant didn't exist!")
-        //   restaurant.dataValues.commentCounts = commentLength
-        //   restaurant.dataValues.favoriteCounts = favoriteLength
-        //   res.render('dashboard', { restaurant: restaurant.toJSON() })
-        // })
-        .catch(err => next(err))
+    restaurantServices.getDashboard(req, (err, data) =>
+      err ? next(err) : res.render('dashboard', data)
     )
   },
   getFeeds: (req, res, next) => {
