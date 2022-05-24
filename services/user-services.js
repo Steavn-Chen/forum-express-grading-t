@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs')
 const { User, Comment, Restaurant } = require('../models')
+const { imgurFileHandler } = require('../helpers/file-helpers.js')
 
 const userServices = {
   signUp: (req, cb) => {
@@ -46,6 +47,9 @@ const userServices = {
       .then(user => {
         if (!user) throw new Error("User didn't exist!")
         let result = user.toJSON()
+        const isFollowed = req.user?.Followings.some(f => f.id === user.id)
+        const anotherUserId = Number(req.params.id)
+        const userId = req.user.id
         if (user.dataValues.Comments) {
           const set = new Set()
           const Comments = result.Comments.filter(item =>
@@ -60,6 +64,25 @@ const userServices = {
             FavoritedRestaurantsCounts: result.FavoritedRestaurants.length
           }
         }
+        cb(null, { user: result, anotherUserId, userId, isFollowed })
+      })
+      .catch(err => cb(err))
+  },
+  putUser: (req, cb) => {
+    const { name, email } = req.body
+    if (!name || !email) throw new Error('Name of Email are required.')
+    const { file } = req
+    return Promise.all([User.findByPk(req.params.id), imgurFileHandler(file)])
+      .then(([user, filePath]) => {
+        if (!user) throw new Error("User didn't exist!")
+        return user.update({
+          name,
+          email,
+          image: filePath || user.image
+        })
+      })
+      .then((putUser) => {
+        const { isAdmin, password, ...result } = putUser
         cb(null, { user: result })
       })
       .catch(err => cb(err))

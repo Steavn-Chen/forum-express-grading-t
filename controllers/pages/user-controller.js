@@ -76,25 +76,12 @@ const userController = {
       .catch(err => next(err))
   },
   putUser: (req, res, next) => {
-    const { name, email } = req.body
-    if (!name) throw new Error('Name are required.')
-    const { file } = req
-    return Promise.all([User.findByPk(req.params.id), imgurFileHandler(file)])
-      .then(([user, filePath]) => {
-        if (!user) throw new Error("User didn't exist!")
-        return user.update({
-          name,
-          email,
-          image: filePath || user.image
-        })
-      })
-      .then(() => {
-        req.flash('success_messages', '使用者資料編輯成功')
-        res.redirect(`/users/${req.params.id}`)
-      })
-      .catch(err => next(err))
+    userServices.putUser(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', '使用者資料編輯成功')
+      res.redirect(`/users/${req.params.id}`)
+    })
   },
-
   addFavorite: (req, res, next) => {
     const { restaurantId } = req.params
     return Promise.all([

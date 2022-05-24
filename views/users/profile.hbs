@@ -23,28 +23,28 @@
           {{#ifCond anotherUserId userId}}
             <a
               href='/users/{{user.id}}/edit'
-              class='btn btn-primary ml-3'
+              class='btn btn-primary ms-3'
             >編輯</a>
           {{else}}
-            {{#if isFollower}}
+            {{#if isFollowed}}
               <form
                 action='/following/{{anotherUserId}}?_method=DELETE'
                 method='POST'
               >
                 <button
                   type='submit'
-                  class='btn btn-danger ml-3'
+                  class='btn btn-danger ms-3'
                 >取消追隨</button></form>
             {{else}}
               <form action='/following/{{anotherUserId}}' method='POST'>
                 <button
                   type='submit'
-                  class='btn btn-primary ml-3'
+                  class='btn btn-primary ms-3'
                 >追隨</button></form>
             {{/if}}
             <a
-              href='/users/{{loginUser.id}}'
-              class='btn btn-primary ml-3'
+              href='/users/{{userId}}'
+              class='btn btn-primary ms-3'
             >回到個人資訊頁</a>
           {{/ifCond}}
         </div>

@@ -7,7 +7,7 @@ const Restaurant = db.Restaurant
 // const Like = db.Like
 // const Followship = db.Followership
 // const { getUser } = require('../../helpers/auth-helpers.js')
-// const { imgurFileHandler } = require('../../helpers/file-helpers.js')
+const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 const jwt = require('jsonwebtoken')
 
 const userServices = require('../../services/user-services.js')
@@ -37,6 +37,9 @@ const userController = {
   },
   getUser: (req, res, next) => {
     userServices.getUser(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
+  putUser: (req, res, next) => {
+    userServices.putUser(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
   }
 }
 
