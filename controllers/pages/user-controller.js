@@ -1,13 +1,13 @@
 const bcrypt = require('bcryptjs')
 const db = require('../../models')
 const User = db.User
-const Comment = db.Comment
-const Restaurant = db.Restaurant
-const Favorite = db.Favorite
-const Like = db.Like
-const Followship = db.Followership
+// const Comment = db.Comment
+// const Restaurant = db.Restaurant
+// const Favorite = db.Favorite
+// const Like = db.Like
+// const Followship = db.Followership
 const { getUser } = require('../../helpers/auth-helpers.js')
-const { imgurFileHandler } = require('../../helpers/file-helpers.js')
+// const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 
 const userServices = require('../../services/user-services.js')
 
@@ -93,83 +93,29 @@ const userController = {
     )
   },
   addLike: (req, res, next) => {
-    const { restaurantId } = req.params
-    return Promise.all([
-      Restaurant.findByPk(restaurantId),
-      Like.findOne({
-        where: {
-          userId: req.user.id,
-          restaurantId
-        }
-      })
-    ])
-      .then(([restaurant, like]) => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        if (like) throw new Error('You have liked this restaurant!')
-        return Like.create({
-          userId: req.user.id,
-          restaurantId
-        })
-      })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    userServices.addLike(req, (err, data) =>
+      err ? next(err) : res.redirect('back')
+    )
   },
   removeLike: (req, res, next) => {
-    const { restaurantId } = req.params
-    return Like.findOne({
-      where: {
-        userId: req.user.id,
-        restaurantId
-      }
-    })
-      .then(like => {
-        if (!like) throw new Error("You haven't liked this restaurant")
-        return like.destroy()
-      })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    userServices.removeLike(req, (err, data) =>
+      err ? next(err) : res.redirect('back')
+    )
   },
   getTopUsers: (req, res, next) => {
     userServices.getTopUsers(req, (err, data) =>
-      err ? next(err) :res.render('top-users', data)
+      err ? next(err) : res.render('top-users', data)
     )
   },
   addFollowing: (req, res, next) => {
-    const { userId } = req.params
-    return Promise.all([
-      User.findByPk(userId),
-      Followship.findOne({
-        where: {
-          followerId: req.user.id,
-          followingId: userId
-        }
-      })
-    ])
-      .then(([user, followship]) => {
-        if (!user) throw new Error("User didn't exist!")
-        if (followship) throw new Error('You have followed this user!')
-        return Followship.create({
-          followerId: req.user.id,
-          followingId: userId
-        })
-      })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    userServices.addFollowing(req, (err, data) =>
+      err ? next(err) : res.redirect('back')
+    )
   },
   removeFollowing: (req, res, next) => {
-    const { userId } = req.params
-    return Followship.findOne({
-      where: {
-        followerId: req.user.id,
-        followingId: userId
-      }
-    })
-      .then(followship => {
-        if (!followship) throw new Error("You haven't followed this user")
-        return followship.destroy()
-      })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    userServices.removeFollowing(req, (err, data) =>
+      err ? next(err) : res.redirect('back')
+    )
   }
 }
 module.exports = userController

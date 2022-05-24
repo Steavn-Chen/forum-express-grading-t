@@ -1,5 +1,12 @@
 const bcrypt = require('bcryptjs')
-const { User, Comment, Restaurant, Favorite } = require('../models')
+const {
+  User,
+  Comment,
+  Restaurant,
+  Favorite,
+  Like,
+  Followership
+} = require('../models')
 const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const { Op } = require('sequelize')
 
@@ -163,6 +170,84 @@ const userServices = {
         return favorite.destroy()
       })
       .then(removeFr => cb(null, { removeFr }))
+      .catch(err => cb(err))
+  },
+  addLike: (req, cb) => {
+    const { restaurantId } = req.params
+    return Promise.all([
+      Restaurant.findByPk(restaurantId),
+      Like.findOne({
+        where: {
+          userId: req.user.id,
+          restaurantId
+        }
+      })
+    ])
+      .then(([restaurant, like]) => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (like) throw new Error('You have liked this restaurant!')
+        return Like.create({
+          userId: req.user.id,
+          restaurantId
+        })
+      })
+      .then(addLike => cb(null, { addLike }))
+      .catch(err => cb(err))
+  },
+  removeLike: (req, cb) => {
+    const { restaurantId } = req.params
+    return Like.findOne({
+      where: {
+        userId: req.user.id,
+        restaurantId
+      }
+    })
+      .then(like => {
+        if (!like) throw new Error("You haven't liked this restaurant")
+        return like.destroy()
+      })
+      .then(removeLike => cb(null, { removeLike }))
+      .catch(err => cb(err))
+  },
+  addFollowing: (req, cb) => {
+    console.log(req.params)
+    console.log(req.user.id)
+    const { userId } = req.params
+    return Promise.all([
+      User.findByPk(userId),
+      Followership.findOne({
+        where: {
+          followerId: req.user.id,
+          followingId: userId
+        }
+      })
+    ])
+      .then(([user, followship]) => {
+        console.log(user)
+        console.log(followship)
+        if (!user) throw new Error("User didn't exist!")
+        if (followship) throw new Error('You have followed this user!')
+        return Followership.create({
+          followerId: req.user.id,
+          followingId: userId
+        })
+      })
+      .then(addFo => cb(null, { addFo }))
+      .catch(err => cb(err))
+  },
+  removeFollowing: (req, cb) => {
+    const { userId } = req.params
+    return Followership.findOne({
+      where: {
+        followerId: req.user.id,
+        followingId: userId
+      }
+    })
+      .then(followship => {
+        if (!followship) throw new Error("You haven't followed this user")
+        return followship.destroy()
+      })
+      .then(removeFo => cb(null, { removeFo }))
       .catch(err => cb(err))
   }
 }

@@ -4,8 +4,8 @@ const User = db.User
 const Comment = db.Comment
 const Restaurant = db.Restaurant
 const Favorite = db.Favorite
-// const Like = db.Like
-// const Followship = db.Followership
+const Like = db.Like
+const Followship = db.Followership
 // const { getUser } = require('../../helpers/auth-helpers.js')
 const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 const jwt = require('jsonwebtoken')
@@ -59,6 +59,26 @@ const userController = {
   },
   removeFavorite: (req, res, next) => {
     userServices.removeFavorite(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  addLike: (req, res, next) => {
+    userServices.addLike(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  removeLike: (req, res, next) => {
+    userServices.removeLike(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  addFollowing: (req, res, next) => {
+    userServices.addFollowing(req, (err, data) =>
+      err ? next(err) : res.json({ status: 'success', data })
+    )
+  },
+  removeFollowing: (req, res, next) => {
+    userServices.removeFollowing(req, (err, data) =>
       err ? next(err) : res.json({ status: 'success', data })
     )
   }
