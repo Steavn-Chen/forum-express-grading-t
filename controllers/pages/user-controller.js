@@ -88,19 +88,9 @@ const userController = {
     )
   },
   removeFavorite: (req, res, next) => {
-    const { restaurantId } = req.params
-    return Favorite.findOne({
-      where: {
-        userId: req.user.id,
-        restaurantId
-      }
-    })
-      .then(favorite => {
-        if (!favorite) throw new Error("You haven't favorited this restaurant")
-        return favorite.destroy()
-      })
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    userServices.removeFavorite(req, (err, data) =>
+      err ? next(err) : res.redirect('back')
+    )
   },
   addLike: (req, res, next) => {
     const { restaurantId } = req.params

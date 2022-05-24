@@ -6,7 +6,9 @@ const { Op } = require('sequelize')
 const userServices = {
   signUp: (req, cb) => {
     const { name, email, password, passwordCheck } = req.body
-    if (!password || !passwordCheck || !name || !email) { throw new Error('所有欄位都是必填的!') }
+    if (!password || !passwordCheck || !name || !email) {
+      throw new Error('所有欄位都是必填的!')
+    }
     if (password !== passwordCheck) {
       throw new Error('Passwords do not match!')
     }
@@ -90,7 +92,9 @@ const userServices = {
           .includes(email)
         if (!user) throw new Error("User didn't exist!")
         if (emailCheck) throw new Error('Email is used!')
-        if (Number(req.user.id) !== Number(req.params.id)) { throw new Error('只能編輯自己的資料。') }
+        if (Number(req.user.id) !== Number(req.params.id)) {
+          throw new Error('只能編輯自己的資料。')
+        }
         return user.update({
           name,
           email,
@@ -143,7 +147,22 @@ const userServices = {
           restaurantId
         })
       })
-      .then(favorited => cb(null, { favorited }))
+      .then(addFr => cb(null, { addFr }))
+      .catch(err => cb(err))
+  },
+  removeFavorite: (req, cb) => {
+    const { restaurantId } = req.params
+    return Favorite.findOne({
+      where: {
+        userId: req.user.id,
+        restaurantId
+      }
+    })
+      .then(favorite => {
+        if (!favorite) throw new Error("You haven't favorited this restaurant")
+        return favorite.destroy()
+      })
+      .then(removeFr => cb(null, { removeFr }))
       .catch(err => cb(err))
   }
 }
