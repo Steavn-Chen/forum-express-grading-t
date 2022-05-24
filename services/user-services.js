@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs')
-const { User } = require('../models')
+const { User, Comment, Restaurant } = require('../models')
 
 const userServices = {
   signUp: (req, cb) => {
@@ -22,6 +22,45 @@ const userServices = {
       )
       .then(user => {
         cb(null, { user })
+      })
+      .catch(err => cb(err))
+  },
+  getUser: (req, cb) => {
+    return User.findByPk(req.params.id, {
+      attributes: {
+        exclude: ['password', 'isAdmin', 'createdAt', 'updatedAt']
+      },
+      include: [
+        {
+          model: Comment,
+          attributes: {
+            exclude: ['text', 'createdAt', 'updatedAt', 'userId']
+          },
+          include: [{ model: Restaurant, attributes: ['id', 'image'] }]
+        },
+        { model: User, as: 'Followers' },
+        { model: User, as: 'Followings' },
+        { model: Restaurant, as: 'FavoritedRestaurants' }
+      ]
+    })
+      .then(user => {
+        if (!user) throw new Error("User didn't exist!")
+        let result = user.toJSON()
+        if (user.dataValues.Comments) {
+          const set = new Set()
+          const Comments = result.Comments.filter(item =>
+            !set.has(item.restaurantId) ? set.add(item.restaurantId) : false
+          )
+          result = {
+            ...result,
+            Comments,
+            commentCounts: Comments.length,
+            FollowingCounts: result.Followings.length,
+            FollowerCounts: result.Followers.length,
+            FavoritedRestaurantsCounts: result.FavoritedRestaurants.length
+          }
+        }
+        cb(null, { user: result })
       })
       .catch(err => cb(err))
   }

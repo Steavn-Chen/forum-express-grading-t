@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs')
 const db = require('../../models')
 const User = db.User
-// const Comment = db.Comment
-// const Restaurant = db.Restaurant
+const Comment = db.Comment
+const Restaurant = db.Restaurant
 // const Favorite = db.Favorite
 // const Like = db.Like
 // const Followship = db.Followership
@@ -34,6 +34,9 @@ const userController = {
   },
   signUp: (req, res, next) => {
     userServices.signUp(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
+  getUser: (req, res, next) => {
+    userServices.getUser(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
   }
 }
 
