@@ -85,7 +85,7 @@ const userServices = {
       })
     ])
       .then(([user, filePath, emailData]) => {
-        const emailCheck = emailData.map((e) => e.dataValues.email).includes(email)
+        const emailCheck = emailData.map(e => e.dataValues.email).includes(email)
         if (!user) throw new Error("User didn't exist!")
         if (emailCheck) throw new Error('Email is used!')
         if (Number(req.user.id) !== Number(req.params.id)) throw new Error('只能編輯自己的資料。')
@@ -98,6 +98,27 @@ const userServices = {
       .then(putUser => {
         const { isAdmin, password, ...result } = putUser.toJSON()
         cb(null, { user: result })
+      })
+      .catch(err => cb(err))
+  },
+  getTopUsers: (req, cb) => {
+    return User.findAll({
+      include: [
+        {
+          model: User,
+          as: 'Followers'
+        }
+      ]
+    })
+      .then(users => {
+        const result = users
+          .map(user => ({
+            ...user.toJSON(),
+            followerCount: user.Followers.length,
+            isFollowed: req.user.Followings.some(f => f.id === user.id)
+          }))
+          .sort((a, b) => b.followerCount - a.followerCount)
+        cb(null, { users: result })
       })
       .catch(err => cb(err))
   }
