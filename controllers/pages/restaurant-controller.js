@@ -19,27 +19,7 @@ const restaurantController = {
     )
   },
   getFeeds: (req, res, next) => {
-    return Promise.all([
-      Restaurant.findAll({
-        raw: true,
-        nest: true,
-        limit: 10,
-        order: [['createdAt', 'DESC']],
-        include: [Category]
-      }),
-      Comment.findAll({
-        raw: true,
-        nest: true,
-        limit: 10,
-        order: [['createdAt', 'DESC']],
-        include: ['User', 'Restaurant']
-      })
-    ]).then(([restaurants, comments]) => {
-      res.render('feeds', {
-        restaurants,
-        comments
-      })
-    })
+    restaurantServices.getFeeds(req, (err, data) => err ? next(err) : res.render('feeds', data))
   },
   getTopRestaurants: (req, res, next) => {
     return Restaurant.findAll({

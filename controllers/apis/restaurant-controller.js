@@ -1,4 +1,4 @@
-// const { Restaurant, Category, Comment, User, Favorite } = require('../../models')
+const { Restaurant, Category, Comment, User, Favorite } = require('../../models')
 
 const restaurantServices = require('../../services/restaurant-services.js')
 
@@ -15,6 +15,9 @@ const restaurantController = {
   },
   getDashboard: (req, res, next) => {
     restaurantServices.getDashboard(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
+  },
+  getFeeds: (req, res, next) => {
+    restaurantServices.getFeeds(req, (err, data) => err ? next(err) : res.json({ status: 'success', data }))
   }
 }
 

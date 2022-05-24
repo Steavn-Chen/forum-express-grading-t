@@ -44,48 +44,50 @@ const restaurantServices = {
       .catch(err => cb(err))
   },
   getRestaurant: (req, cb) => {
-    return Restaurant.findByPk(req.params.id, {
-      include: [
-        Category,
-        {
-          model: Comment,
-          separate: true,
-          order: [['created_at', 'DESC']],
-          include: User
-        },
-        {
-          model: User,
-          as: 'FavoritedUsers'
-        },
-        {
-          model: User,
-          as: 'LikedUsers'
-        }
-      ]
-      // order: [[Comment, 'created_at', 'DESC']]
-    })
-    // 個人寫法
-      .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        const favoritedUsersId = restaurant.FavoritedUsers.some(
-          f => f.id === req.user && req.user.id
-        )
-        const islikedUserId = restaurant.LikedUsers.some(
-          l => l.id === req.user && req.user.id
-        )
-        // restaurant.dataValues = {
-        //   ...restaurant.dataValues,
-        //   isFavorited: favoritedUsersId,
-        //   isLiked: islikedUserId
-        // }
-        restaurant.dataValues.isFavorited = favoritedUsersId
-        restaurant.dataValues.isLiked = islikedUserId
-        return restaurant.increment('viewCounts', { by: 1 })
+    return (
+      Restaurant.findByPk(req.params.id, {
+        include: [
+          Category,
+          {
+            model: Comment,
+            separate: true,
+            order: [['created_at', 'DESC']],
+            include: User
+          },
+          {
+            model: User,
+            as: 'FavoritedUsers'
+          },
+          {
+            model: User,
+            as: 'LikedUsers'
+          }
+        ]
+        // order: [[Comment, 'created_at', 'DESC']]
       })
-      .then(restaurant => {
-        cb(null, { restaurant: restaurant.toJSON() })
-      })
-      .catch(err => cb(err))
+        // 個人寫法
+        .then(restaurant => {
+          if (!restaurant) throw new Error("Restaurant didn't exist!")
+          const favoritedUsersId = restaurant.FavoritedUsers.some(
+            f => f.id === req.user && req.user.id
+          )
+          const islikedUserId = restaurant.LikedUsers.some(
+            l => l.id === req.user && req.user.id
+          )
+          // restaurant.dataValues = {
+          //   ...restaurant.dataValues,
+          //   isFavorited: favoritedUsersId,
+          //   isLiked: islikedUserId
+          // }
+          restaurant.dataValues.isFavorited = favoritedUsersId
+          restaurant.dataValues.isLiked = islikedUserId
+          return restaurant.increment('viewCounts', { by: 1 })
+        })
+        .then(restaurant => {
+          cb(null, { restaurant: restaurant.toJSON() })
+        })
+        .catch(err => cb(err))
+    )
     //   // 教案寫法
     // .then(restaurant => {
     //   if (!restaurant) throw new Error("Restaurant didn't exist!")
@@ -114,6 +116,31 @@ const restaurantServices = {
         if (!restaurant) throw new Error("Restaurant didn't exist!")
         const result = { ...restaurant.toJSON(), commentCounts, favoriteCounts }
         cb(null, { restaurant: result })
+      })
+      .catch(err => cb(err))
+  },
+  getFeeds: (req, cb) => {
+    return Promise.all([
+      Restaurant.findAll({
+        raw: true,
+        nest: true,
+        limit: 10,
+        order: [['createdAt', 'DESC']],
+        include: [Category]
+      }),
+      Comment.findAll({
+        raw: true,
+        nest: true,
+        limit: 10,
+        order: [['createdAt', 'DESC']],
+        include: ['User', 'Restaurant']
+      })
+    ])
+      .then(([restaurants, comments]) => {
+        cb(null, {
+          restaurants,
+          comments
+        })
       })
       .catch(err => cb(err))
   }
