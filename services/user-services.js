@@ -5,7 +5,7 @@ const {
   Restaurant,
   Favorite,
   Like,
-  Followership
+  Followship
 } = require('../models')
 const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const { Op } = require('sequelize')
@@ -215,7 +215,7 @@ const userServices = {
     const { userId } = req.params
     return Promise.all([
       User.findByPk(userId),
-      Followership.findOne({
+      Followship.findOne({
         where: {
           followerId: req.user.id,
           followingId: userId
@@ -227,7 +227,7 @@ const userServices = {
         console.log(followship)
         if (!user) throw new Error("User didn't exist!")
         if (followship) throw new Error('You have followed this user!')
-        return Followership.create({
+        return Followship.create({
           followerId: req.user.id,
           followingId: userId
         })
@@ -237,7 +237,7 @@ const userServices = {
   },
   removeFollowing: (req, cb) => {
     const { userId } = req.params
-    return Followership.findOne({
+    return Followship.findOne({
       where: {
         followerId: req.user.id,
         followingId: userId

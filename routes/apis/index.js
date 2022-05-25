@@ -6,6 +6,7 @@ const upload = require('../../middleware/multer.js')
 
 const userController = require('../../controllers/apis/user-controller.js')
 const restController = require('../../controllers/apis/restaurant-controller.js')
+const commentController = require('../../controllers/apis/comment-controller.js')
 
 const admin = require('./modules/admin.js')
 
@@ -35,6 +36,9 @@ router.delete('/like/:restaurantId', authenticated, userController.removeLike)
 
 router.post('/following/:userId', authenticated, userController.addFollowing)
 router.delete('/following/:userId', authenticated, userController.removeFollowing)
+
+router.delete('/comments/:id', authenticated, authenticatedAdmin, commentController.deleteComment)
+router.post('/comments', authenticated, commentController.postComment)
 
 router.use('/', apiErrorHandler)
 

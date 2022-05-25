@@ -3,12 +3,12 @@ const commentServices = require('../../services/comment-services.js')
 const commentController = {
   postComment: (req, res, next) => {
     commentServices.postComment(req, (err, data) =>
-      err ? next(err) : res.redirect('back')
+      err ? next(err) : res.json({ status: 'success', data })
     )
   },
   deleteComment: (req, res, next) => {
     commentServices.deleteComment(req, (err, data) =>
-      err ? next(err) : res.redirect('back')
+      err ? next(err) : res.json({ status: 'success', data })
     )
   }
 }
