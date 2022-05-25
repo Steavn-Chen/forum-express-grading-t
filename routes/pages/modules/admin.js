@@ -25,7 +25,6 @@ router.post('/categories', categoryController.postCategory)
 router.get('/users', adminController.getUsers)
 router.patch('/users/:id/toggleAdmin', adminController.patchUser)
 
-// router.use('/', (req, res) => res.redirect('/admin/restaurants'))
 router.get('/', (req, res) => res.redirect('/admin/restaurants'))
 
 router.use('/', generalErrorHandler)

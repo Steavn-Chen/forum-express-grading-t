@@ -1,5 +1,4 @@
 const { Restaurant, Category } = require('../../models')
-// const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 
 const adminServices = require('../../services/admin-services.js')
 

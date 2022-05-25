@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const {
   User,
   Comment,
@@ -11,6 +12,27 @@ const { imgurFileHandler } = require('../helpers/file-helpers.js')
 const { Op } = require('sequelize')
 
 const userServices = {
+  signIn: (req, cb) => {
+    // if (req.Session && req.Session.passport) {
+    if (req.Session?.passport) {
+      cb(null, {})
+    } else {
+      try {
+        const userData = req.user.toJSON()
+        delete userData.password
+        // const { password, ...newUserData } = userData
+        const token = jwt.sign(userData, process.env.JWT_SECRET, {
+          expiresIn: '5d'
+        })
+        cb(null, {
+          token,
+          user: userData
+        })
+      } catch (err) {
+        cb(err)
+      }
+    }
+  },
   signUp: (req, cb) => {
     const { name, email, password, passwordCheck } = req.body
     if (!password || !passwordCheck || !name || !email) {
@@ -32,7 +54,8 @@ const userServices = {
         })
       )
       .then(user => {
-        cb(null, { user })
+        const { password, ...result } = user.toJSON()
+        cb(null, { user: result })
       })
       .catch(err => cb(err))
   },

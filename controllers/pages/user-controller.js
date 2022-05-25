@@ -1,13 +1,7 @@
-const bcrypt = require('bcryptjs')
 const db = require('../../models')
 const User = db.User
-// const Comment = db.Comment
-// const Restaurant = db.Restaurant
-// const Favorite = db.Favorite
-// const Like = db.Like
-// const Followship = db.Followership
+
 const { getUser } = require('../../helpers/auth-helpers.js')
-// const { imgurFileHandler } = require('../../helpers/file-helpers.js')
 
 const userServices = require('../../services/user-services.js')
 
@@ -22,35 +16,20 @@ const userController = {
       req.flash('success_messages', '成功註冊。')
       res.redirect('/signin')
     })
-    // if (req.body.password !== req.body.passwordCheck) {
-    //   throw new Error('Passwords do not match!')
-    // }
-    // User.findOne({ where: { email: req.body.email } })
-    //   .then(user => {
-    //     if (user) throw new Error('Email already exists!')
-    //     return bcrypt.hash(req.body.password, 10)
-    //   })
-    //   .then(hash =>
-    //     User.create({
-    //       name: req.body.name,
-    //       email: req.body.email,
-    //       password: hash
-    //     })
-    //   )
-    //   .then(() => {
-    //     req.flash('success_messages', '成功註冊。')
-    //     res.redirect('/signin')
-    //   })
-    //   .catch(err => next(err))
   },
 
   signInPage: (req, res) => {
     res.render('signin')
   },
 
-  signIn: (req, res) => {
-    req.flash('success_messages', '成功登入 !')
-    res.redirect('/restaurants')
+  signIn: (req, res, next) => {
+    userServices.signIn(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', '成功登入 !')
+      res.redirect('/restaurants')
+    })
+    // req.flash('success_messages', '成功登入 !')
+    // res.redirect('/restaurants')
   },
 
   logout: (req, res) => {

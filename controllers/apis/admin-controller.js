@@ -1,7 +1,3 @@
-// const { Restaurant, Category, User } = require('../../models')
-// const { imgurFileHandler } = require('../../helpers/file-helpers.js')
-// const { getOffset, getPagination } = require('../../helpers/pagination.js')
-
 const adminServices = require('../../services/admin-services.js')
 
 const adminController = {
