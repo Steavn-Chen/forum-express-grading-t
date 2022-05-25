@@ -63,9 +63,7 @@ const restaurantServices = {
             as: 'LikedUsers'
           }
         ]
-        // order: [[Comment, 'created_at', 'DESC']]
       })
-        // 個人寫法
         .then(restaurant => {
           if (!restaurant) throw new Error("Restaurant didn't exist!")
           const favoritedUsersId = restaurant.FavoritedUsers.some(
@@ -74,11 +72,6 @@ const restaurantServices = {
           const isLikedUserId = restaurant.LikedUsers.some(
             l => l.id === (req.user && req.user.id)
           )
-          // restaurant.dataValues = {
-          //   ...restaurant.dataValues,
-          //   isFavorited: favoritedUsersId,
-          //   isLiked: islikedUserId
-          // }
           restaurant.dataValues.isFavorited = favoritedUsersId
           restaurant.dataValues.isLiked = isLikedUserId
           return restaurant.increment('viewCounts', { by: 1 })
@@ -88,21 +81,6 @@ const restaurantServices = {
         })
         .catch(err => cb(err))
     )
-    //   // 教案寫法
-    // .then(restaurant => {
-    //   if (!restaurant) throw new Error("Restaurant didn't exist!")
-    //   return restaurant.increment('viewCounts', { by: 1 })
-    // })
-    // .then(restaurant => {
-    //   const isFavorited = restaurant.FavoritedUsers.some(fr => fr.id === req.user && req.user.id)
-    //   const isLiked = restaurant.LikedUsers.some(l => l.id === req.user && req.user.id)
-    //   res.json({
-    //     restaurant: restaurant.toJSON(),
-    //     isFavorited,
-    //     isLiked
-    //   })
-    // })
-    // .catch(err => next(err))
   },
   getDashboard: (req, cb) => {
     return Promise.all([

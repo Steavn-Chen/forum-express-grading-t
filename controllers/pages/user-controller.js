@@ -28,8 +28,6 @@ const userController = {
       req.flash('success_messages', '成功登入 !')
       res.redirect('/restaurants')
     })
-    // req.flash('success_messages', '成功登入 !')
-    // res.redirect('/restaurants')
   },
 
   logout: (req, res) => {

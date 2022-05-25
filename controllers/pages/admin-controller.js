@@ -23,7 +23,6 @@ const adminController = {
       if (err) return next(err)
       req.flash('success_messages', 'restaurant was successfully created')
       res.redirect('/admin/restaurants')
-      // res.redirect('/admin/restaurants', data) // <--回傳data的話就無法回到/admin/restaurants
     })
   },
   getRestaurant: (req, res, next) => {
@@ -45,7 +44,6 @@ const adminController = {
       if (err) return next(err)
       req.flash('success_messages', 'restaurant was successfully to update')
       res.redirect('/admin/restaurants')
-      // res.redirect('/admin/restaurants', data) // <--回傳data的話就無法回到/admin/restaurants
     })
   },
   getUsers: (req, res, next) => {
